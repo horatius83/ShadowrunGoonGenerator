@@ -15,31 +15,22 @@ import Stats
 import Data.List
 
 data AP = AP Int | Half deriving (Show)
-data Damage = Dmg { 
-    dmgPhysical :: (Int -> Int), 
-    dmgStun :: Maybe (Int -> Int), 
-    dmgAP :: AP} 
-    | Grenade 
-    | Chemical 
-    | SpecialDmg AP
-    | Toxin AP
-    | Missile
+
+data DamageType = DmgPhysical (Int -> Int) | DmgStun (Int -> Int)
+data Damage = Dmg DamageType AP | Grenade | Chemical | SpecialDmg AP | Toxin AP | Missile
 
 instance Show Damage where
-    show (Dmg _ _ (AP ap)) = show "AP: " ++ (show ap)
-    show (Dmg _ _ (Half)) = show "AP: -Half"
+    show (Dmg _ (AP ap)) = show "AP: " ++ (show ap)
+    show (Dmg _ (Half)) = show "AP: -Half"
     show Grenade = show "Grenade"
     show Chemical = show "Chemical"
     show (SpecialDmg ap) = show "Special" ++ (show ap)
     show (Toxin ap) = show "Toxin" ++ (show ap)
     show Missile = show "Missile"
 
-getDamage stats (Dmg physical stun ap) =
-    let str = statStrength stats
-        getStun (Just x) = x str
-        getStun (Nothing) = 0
-    in
-    (physical str, getStun stun, ap) 
+getDamage :: Stats -> Damage -> (Int, Int, AP) 
+getDamage stats (Dmg (DmgPhysical f) ap) = (f (statStrength stats), 0, ap)
+getDamage stats (Dmg (DmgStun f) ap) = (0, f (statStrength stats), ap)
 
 data Magazine = Magazine { shotsRemaining :: Int, shots :: Int} deriving (Show)
 
@@ -58,25 +49,40 @@ data Weapon = Weapon {
     weaponReach :: Maybe Int,
     weaponRecoil :: Maybe Int,
     weaponModes :: Maybe [WeaponMode],
-    weaponAmmoCapacity :: Maybe Int} deriving (Show)
+    weaponAmmoCapacity :: Maybe Int,
+    weaponMinimumStrength :: Maybe Int} deriving (Show)
 
+showWeapon :: Stats -> Weapon -> String
 showWeapon stats wpn =
     let (physical, stun, ap) = getDamage stats (weaponDmg wpn)
         weaponStats = [weaponName wpn, " Physical: ", show physical, " Stun: ", show stun, " AP: ", show ap]
     in Data.List.foldl (++) "" weaponStats
 
-ranged name damage wpnType modes ammoCapacity = Weapon name damage wpnType Nothing Nothing (Just modes) (Just ammoCapacity)
-rranged name damage wpnType modes recoil ammoCapacity = Weapon name damage wpnType Nothing (Just recoil) (Just modes) (Just ammoCapacity)
-melee name damage wpnType reach = Weapon name damage wpnType (Just reach) Nothing Nothing Nothing 
+ranged :: String -> Damage -> WeaponType -> [WeaponMode] -> Int -> Weapon
+ranged name damage wpnType modes ammoCapacity = Weapon name damage wpnType Nothing Nothing (Just modes) (Just ammoCapacity) Nothing
 
-dmg hp ap = Dmg (\x -> hp) Nothing (AP ap)
-physicalDmg f ap = Dmg f Nothing (AP ap)
+rranged :: String -> Damage -> WeaponType -> [WeaponMode] -> Int -> Int -> Weapon
+rranged name damage wpnType modes recoil ammoCapacity = Weapon name damage wpnType Nothing (Just recoil) (Just modes) (Just ammoCapacity) Nothing 
 
+melee :: String -> Damage -> WeaponType -> Int -> Weapon
+melee name damage wpnType reach = Weapon name damage wpnType (Just reach) Nothing Nothing Nothing Nothing 
+
+dmg :: Int -> Int -> Damage
+dmg hp ap = Dmg (DmgPhysical (\x -> hp)) (AP ap)
+
+physicalDmg :: (Int -> Int) -> Int -> Damage
+physicalDmg f ap = Dmg (DmgPhysical f) (AP ap)
+
+div2 :: Int -> Int
 div2 x = x `div` 2
 
+notFoundWeapon :: String -> Weapon
 notFoundWeapon x = melee ("Could not find '" ++ x ++ "' in weapon database.") (dmg 0 0) Blade 0
+
+getWeapon :: String -> Weapon
 getWeapon x = findWithDefault (notFoundWeapon x) x weaponDb
-weaponDb = fromList [(weaponName x, x) | x <- [
+weaponDb = fromList [(weaponName x, x) | x <- weaponList ++ bowList ]
+weaponList = [
     -- Blades
     melee "Combat Axe" (physicalDmg (\str -> 4 + div2 str) (-1)) Blade 2,
     melee "Forearm Snap Blades" (physicalDmg (\str -> 2 + div2 str) 0) Blade 0,
@@ -90,17 +96,16 @@ weaponDb = fromList [(weaponName x, x) | x <- [
     melee "Extendable Baton" (physicalDmg (\str -> 1 + div2 str) 0) Club 1,
     melee "Sap" (physicalDmg (\str -> 1 + div2 str) 0) Club 0,
     melee "Staff" (physicalDmg (\str -> 2 + div2 str) 0) Club 2,
-    melee "Stun Baton" (Dmg (\_ -> 0) (Just (\str -> 6)) Half) Club 1,
+    melee "Stun Baton" (Dmg (DmgStun (\_ -> 6)) Half) Club 1,
     -- Exotic Melee Weapons
     melee "Monofilament Whip" (physicalDmg (\str -> 8) (-4)) Exotic 2,
     melee "Pole Arm" (physicalDmg (\str -> 2 + div2 str) (-2)) Exotic 2,
-    melee "Riot Shield" (Dmg (\_ -> 0) (Just (\str -> div2 str)) (AP 2)) Exotic 0,
-    melee "Taser Armor/Shield" (Dmg (\_ -> 0) (Just (\str -> 6)) Half) Exotic 0,
+    melee "Riot Shield" (Dmg (DmgStun (\str -> div2 str)) (AP 2)) Exotic 0,
+    melee "Taser Armor/Shield" (Dmg (DmgStun (\_ -> 6)) Half) Exotic 0,
     -- Unarmed
-    melee "Shock Glove" (Dmg (\_ -> 0) (Just (\str -> 5)) Half) Unarmed 0,
-    melee "Shock Frills" (Dmg (\_ -> 0) (Just (\str -> 6)) Half) Unarmed 0,
-    -- Bows
-    -- Bow (damage STR Min + 2)P (AP -)
+    melee "Shock Glove" (Dmg (DmgStun (\_ -> 5)) Half) Unarmed 0,
+    melee "Shock Frills" (Dmg (DmgStun (\_ -> 6)) Half) Unarmed 0,
+    -- Bows (Calculated in a separate Bow list)
     -- Crossbows   
     ranged "Light Crossbow" (dmg 3 0) Crossbow [] 4,
     ranged "Medium Crossbow" (dmg 5 0) Crossbow [] 4,
@@ -109,8 +114,8 @@ weaponDb = fromList [(weaponName x, x) | x <- [
     melee "Shuriken" (physicalDmg (\str -> div2 str) 0) ThrowingWeapon 0,
     melee "Throwing Knife" (physicalDmg (\str -> 1 + div2 str) 0) ThrowingWeapon 0,
     -- Tasers
-    ranged "Defiance EX Shocker" (Dmg (\_ -> 0) (Just (\str -> 8)) Half) Taser [SingleShot] 4,
-    ranged "Yamaha Pulsar" (Dmg (\_ -> 0) (Just (\str -> 6)) Half) Taser [SemiAutomatic] 4,
+    ranged "Defiance EX Shocker" (Dmg (DmgStun (\_ -> 8)) Half) Taser [SingleShot] 4,
+    ranged "Yamaha Pulsar" (Dmg (DmgStun (\_ -> 6)) Half) Taser [SemiAutomatic] 4,
     -- Hold Outs
     ranged "Raecor Sting" (dmg 6 5) HoldOut [SingleShot] 5,
     ranged "Streetline Special" (dmg 4 0) HoldOut [SingleShot] 6,
@@ -174,5 +179,8 @@ weaponDb = fromList [(weaponName x, x) | x <- [
     ranged "ArmTech MGL-12" Grenade GrenadeLauncher [SemiAutomatic] 12,
     -- Missile Launchers
     ranged "Aztechnology Striker" Missile MissileLauncher [SingleShot] 1,
-    ranged "Mitsubishi Yakusoku MRL" Missile MissileLauncher [SemiAutomatic] 8]]
+    ranged "Mitsubishi Yakusoku MRL" Missile MissileLauncher [SemiAutomatic] 8]
 
+bow :: String -> Damage -> Int -> Weapon
+bow name damage minStrength = Weapon name damage Bow Nothing Nothing (Just [SingleShot]) (Just 1) (Just minStrength)
+bowList = [bow ("Bow (Rating " ++ show x ++ ")") (dmg (x + 2) 0) x | x <- [1..12]]  
