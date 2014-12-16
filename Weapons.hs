@@ -81,6 +81,7 @@ notFoundWeapon x = melee ("Could not find '" ++ x ++ "' in weapon database.") (d
 
 getWeapon :: String -> Weapon
 getWeapon x = findWithDefault (notFoundWeapon x) x weaponDb
+
 weaponDb = fromList [(weaponName x, x) | x <- weaponList ++ bowList ]
 weaponList = [
     -- Blades
@@ -183,4 +184,5 @@ weaponList = [
 
 bow :: String -> Damage -> Int -> Weapon
 bow name damage minStrength = Weapon name damage Bow Nothing Nothing (Just [SingleShot]) (Just 1) (Just minStrength)
+
 bowList = [bow ("Bow (Rating " ++ show x ++ ")") (dmg (x + 2) 0) x | x <- [1..12]]  
