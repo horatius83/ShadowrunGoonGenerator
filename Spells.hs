@@ -17,9 +17,9 @@ data DV = DV String deriving (Show)
 data CombatSpellType = Cst_Direct | Cst_Indirect deriving (Show)
 data ElementalType = Fire | Lightning | Acid | None deriving (Show)
 data DetectionSpellType = Dst_Active | Dst_Passive deriving (Show)
-data DetectionSpellFocus = Dst_Directional | Dst_Area | Dst_Psychic deriving (Show)
+data DetectionSpellFocus = Dsf_Directional | Dsf_Area | Dsf_Psychic deriving (Show)
 data IllusionSpellType = Ist_Realistic | Ist_Obvious deriving (Show)
-data IllusionSpellSenses = Ist_Single | Ist_Multi deriving (Show)
+data IllusionSpellSenses = Iss_Single | Iss_Multi deriving (Show)
 data ManipulationSpellType = Mst_Mental | Mst_Physical | Mst_Environmental deriving (Show)
 
 data Spell = 
@@ -62,4 +62,42 @@ spellDb = fromList [(spellName x, x) | x <- [
     CombatSpell "Powerball" Physical LoSArea Sd_Physical Instant (DV "F/2+3") "" Cst_Direct None,
     CombatSpell "Knockout" Mana Touch Sd_Stun Instant (DV "F/2-3") "" Cst_Direct None,
     CombatSpell "Stunbolt" Mana LoS Sd_Stun Instant (DV "F/2-1") "" Cst_Direct None,
-    CombatSpell "Stunball" Mana LoSArea Sd_Stun Instant (DV "F/2+1") "" Cst_Direct None]]
+    CombatSpell "Stunball" Mana LoSArea Sd_Stun Instant (DV "F/2+1") "" Cst_Direct None,
+    
+    DetectionSpell "Analyze Device" Physical Touch Sustained (DV "F/2") "" Dst_Active Dsf_Directional,
+    DetectionSpell "Analyze Truth" Mana Touch Sustained (DV "F/2") "" Dst_Active Dsf_Directional,
+    DetectionSpell "Clairaudience" Mana Touch Sustained (DV "F/2-1") "" Dst_Passive Dsf_Directional,
+    DetectionSpell "Clairvoyance" Mana Touch Sustained (DV "F/2-1") "" Dst_Passive Dsf_Directional,
+    DetectionSpell "Combat Sense" Mana Touch Sustained (DV "F/2+2") "" Dst_Active Dsf_Psychic,
+    DetectionSpell "Detect Enemies" Mana Touch Sustained (DV "F/2+1") "" Dst_Active Dsf_Area,
+    DetectionSpell "Detect Enemies Extended" Mana Touch Sustained (DV "F/2+3") "" Dst_Active Dsf_Area,
+    DetectionSpell "Detect Individual" Mana Touch Sustained (DV "F/2-1") "" Dst_Active Dsf_Area,
+    DetectionSpell "Detect Life" Mana Touch Sustained (DV "F/2") "" Dst_Active Dsf_Area,
+    DetectionSpell "Detect Life Extended" Mana Touch Sustained (DV "F/2+2") "" Dst_Active Dsf_Area,
+    DetectionSpell "Detect Life Form" Mana Touch Sustained (DV "F/2-1") "" Dst_Active Dsf_Area,
+    DetectionSpell "Detect Life Form Extended" Mana Touch Sustained (DV "F/2+1") "" Dst_Active Dsf_Area,
+    DetectionSpell "Detect Magic" Mana Touch Sustained (DV "F/2") "" Dst_Active Dsf_Area,
+    DetectionSpell "Detect Magic Extended" Mana Touch Sustained (DV "F/2+2") "" Dst_Active Dsf_Area,
+    DetectionSpell "Detect Object" Physical Touch Sustained (DV "F/2-1") "" Dst_Active Dsf_Area,
+    DetectionSpell "Mindlink" Mana Touch Sustained (DV "F/2+1") "" Dst_Active Dsf_Psychic,
+    DetectionSpell "Mind Probe" Mana Touch Sustained (DV "F/2+2") "" Dst_Active Dsf_Directional,
+
+    Spell "Antidote" Mana Touch Permanent (DV "ToxinDV-2") "",
+    Spell "Cure Disease" Mana Touch Permanent (DV "DiseaseDV-2") "",
+    Spell "Decrease Attribute" Physical Touch Sustained (DV "F/2+1") "",
+    Spell "Detox" Mana Touch Permanent (DV "ToxinDV-4") "",
+    Spell "Heal" Mana Touch Permanent (DV "DamageValue-2") "",
+    Spell "Hibernate" Mana Touch Sustained (DV "F/2-3") "",
+    Spell "Increase Attribute" Physical Touch Sustained (DV "F/2-2") "",
+    Spell "Increase Reflexes" Physical Touch Sustained (DV "F/2+2") "",
+    Spell "Oxygenate" Physical Touch Sustained (DV "F/2-1") "",
+    Spell "Prophylaxis" Mana Touch Sustained (DV "F/2-2") "",
+    Spell "Resist Pain" Mana Touch Permanent (DV "DamageValue-4") "",
+    Spell "Stabilize" Mana Touch Permanent (DV "OverflowDamage-2") "",
+
+    IllusionSpell "Confusion" Mana LoS Sustained (DV "F/2") "" Ist_Realistic Iss_Multi,
+    IllusionSpell "Mass Confusion" Mana LoSArea Sustained (DV "F/2+2") "" Ist_Realistic Iss_Multi,
+    IllusionSpell "Chaos" Physical LoS Sustained (DV "F/2+1") "" Ist_Realistic Iss_Multi,
+    IllusionSpell "Chaotic World" Physical LoSArea Sustained (DV "F/2+3") "" Ist_Realistic Iss_Multi,
+    IllusionSpell "Entertainment" Mana LoSArea Sustained (DV "F/2+1") "" Ist_Obvious Iss_Multi,
+    IllusionSpell "Trid Entertainment" Mana LoSArea Sustained (DV "F/2+2") "" Ist_Obvious Iss_Multi]]

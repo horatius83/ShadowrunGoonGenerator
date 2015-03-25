@@ -6,6 +6,7 @@ import Stats
 import Armor
 import Equipment
 import Skills
+import Spells
 
 createGoonStats b a r s c i l w ip = Stats b a r s c i l w 1 6.0 Nothing 1 ip Nothing 10
 createMagicGoonStats b a r s c i l w m ip = Stats b a r s c i l w 1 6.0 (Just m) 1 ip Nothing 10
@@ -18,25 +19,6 @@ data Program = Program { programName :: String, programLevel :: Int} deriving (S
 
 data BodyPart = RightArm | LeftArm | RightLeg | LeftLeg deriving (Show)
 data Cyberware = Cyberware BodyPart Stats deriving (Show)
-
-data SpellType = Physical | Mana deriving (Show)
-data SpellRange = LoS | LoSArea deriving (Show)
-data SpellDuration = Sustained | Instant deriving (Show)
-data Spell = Spell {
-    spellName :: String, 
-    spellType :: SpellType,
-    spellRange :: SpellRange,
-    spellDuration :: SpellDuration,
-    spellDescription :: String } deriving (Show)
-
-notFoundSpell x = Spell ("Could not find '" ++ x ++ "' in spell database") Mana LoS Instant ""
-getSpell x = findWithDefault (notFoundSpell x) x spellDb
-spellDb = fromList [(spellName x, x) | x <- [
-    Spell "Armor" Physical LoS Sustained "Both ballistic and Impact protection equal to hits scored, cumulative with worn armor.",
-    Spell "Confusion" Mana LoS Sustained "-1 dice pool modifier to target per hit",
-    Spell "Ice Sheet" Physical LoSArea Instant "Crossing ice requires Agility + Reaction Test, Threshold equal to hits, to avoid falling",
-    Spell "Manabolt" Mana LoS Instant "Damage: (equal to hits)P"]]
-
 type Weaknesses = [String]
 
 data Goon = Goon {
