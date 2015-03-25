@@ -100,4 +100,13 @@ spellDb = fromList [(spellName x, x) | x <- [
     IllusionSpell "Chaos" Physical LoS Sustained (DV "F/2+1") "" Ist_Realistic Iss_Multi,
     IllusionSpell "Chaotic World" Physical LoSArea Sustained (DV "F/2+3") "" Ist_Realistic Iss_Multi,
     IllusionSpell "Entertainment" Mana LoSArea Sustained (DV "F/2+1") "" Ist_Obvious Iss_Multi,
-    IllusionSpell "Trid Entertainment" Mana LoSArea Sustained (DV "F/2+2") "" Ist_Obvious Iss_Multi]]
+    IllusionSpell "Trid Entertainment" Mana LoSArea Sustained (DV "F/2+2") "" Ist_Obvious Iss_Multi,
+    IllusionSpell "Invisibility" Mana LoS Sustained (DV "F/2") "" Ist_Realistic Iss_Single,
+    IllusionSpell "Improved Invisibility" Mana LoS Sustained (DV "F/2+1") "" Ist_Realistic Iss_Single,
+    IllusionSpell "Mask" Mana Touch Sustained (DV "F/2") "" Ist_Realistic Iss_Multi,
+    IllusionSpell "Physical Mask" Physical Touch Sustained (DV "F/2+1") "" Ist_Realistic Iss_Multi,
+    IllusionSpell "Phantasm" Mana LoSArea Sustained (DV "F/2+2") "" Ist_Realistic Iss_Multi,
+    IllusionSpell "Trid Phantasm" Physical LoSArea Sustained (DV "F/2+3") "" Ist_Realistic Iss_Multi,
+    IllusionSpell "Hush" Mana LoSArea Sustained (DV "F/2+2") "" Ist_Realistic Iss_Single,
+    IllusionSpell "Silence" Physical LoSArea Sustained (DV "F/2+3") "" Ist_Realistic Iss_Single,
+    IllusionSpell "Stealth" Physical LoS Sustained (DV "F/2+1") "" Ist_Realistic Iss_Single]]
