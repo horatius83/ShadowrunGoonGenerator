@@ -43,7 +43,6 @@ printGoon goon = do
             return ()
     mapM_ putStrLn [x ++ ": " ++ show y | (x,y) <- stats]
     putStrLn "Weapons: "
-    --mapM_ putStrLn [printWeapon weapon (goonStats goon) | weapon <- (goonWeapons goon)]
     mapM_ putStrLn [showWeapon (goonStats goon) weapon | weapon <- (goonWeapons goon)]
     putStrLn "Equipment:"
     mapM_ putStrLn [show equipment | equipment <- (goonEquipment goon)]

@@ -19,12 +19,10 @@ data Stats = Stats {
     statResonance :: Maybe Int,
     statConditionMonitor :: Int} deriving (Show)
 
+stringifyStats :: (Show a) => [a] -> String
 stringifyStats lst = (foldl (++) "" $ intersperse " " $ [show x | x <- lst]) ++ "\n"
 
-{--instance Show Stats where
-    show (Stats b a r c i l w e ess Nothing init ip Nothing) = show "b a r c i l w e ess init ip\n" ++ stringifyStats [b, a, r, c, i, l, w, e, ess, init, ip] 
-    show (Stats b a r c i l w e ess (Just m) init ip Nothing) = show "b a r c i l w e ess m*    
---}
+getStat :: String -> (String, (Stats -> Int))
 getStat name = case name of
     "b" -> ("Body", statBody)
     "a" -> ("Agility", statAgility)
@@ -37,6 +35,7 @@ getStat name = case name of
     "ip" -> ("Initiative Passes", statInitiativePasses)
     otherwise -> ("Invalid Stat: " ++ name, \x -> 0)
 
+getSpecialStat :: String -> (String, (Stats -> Maybe Int))
 getSpecialStat name = case name of
     "m" -> ("Magic", statMagic)
     "res" -> ("Resonance", statResonance)
