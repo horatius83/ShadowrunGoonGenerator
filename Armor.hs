@@ -1,16 +1,16 @@
 module Armor (getArmor) where
 
-import Equipment
+import Equipment (Equipment (Armor), ArmorType(..), ArmorMod(..))
 import Data.Map
 
 armor name b i = Armor name b i Body []
 
-notFoundArmor x = Armor ("Could not find '" ++ x ++ "' in the armor database.") 0 0 Body []
+notFoundArmor x = armor ("Could not find '" ++ x ++ "' in the armor database.") 0 0 
 getArmor x = findWithDefault (notFoundArmor x) x armorDb
 armorDb = fromList [(getName x, x) | x <- [
-    Clothing "Clothing" 0 0,
-    Clothing "Feedback Clothing" 0 0,
-    Clothing "Leather Jacket" 2 2,
+    armor "Clothing" 0 0, 
+    armor "Feedback Clothing" 0 0, 
+    armor "Leather Jacket" 2 2,
     armor "Actioneer Business Clothes" 5 3,
     armor "Armor Clothing" 4 0,
     armor "Armor Vest" 6 4,
@@ -27,6 +27,3 @@ armorDb = fromList [(getName x, x) | x <- [
     Armor "Riot Shield" 2 6 Shield [],
     Armor "Taser Shield" 2 6 Shield [Nonconductivity]]]
     where getName (Armor name _ _ _ _) = name
-          getName (Clothing name _ _) = name  
-
-

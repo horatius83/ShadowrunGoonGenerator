@@ -2,10 +2,12 @@ module Goon (getGoon) where
 
 import Cyberware (Cyberware, BodyPart)
 import Hacking (Program)
-import Stats (Stats)
-import Weapons (Weapon)
-import Skills (Skill)
+import Stats (Stats(..), getStat)
+import Weapons (Weapon, getWeapon, showWeapon)
+import Skills (Skill, createSkill)
 import Spells (Spell)
+import Armor (getArmor)
+import Equipment (Equipment, getEquipment)
 
 data Goon = Goon {
     goonName :: String,
@@ -18,36 +20,20 @@ data Goon = Goon {
     goonPrograms :: Maybe [Program],
     goonSpells :: Maybe [Spell]} deriving (Show)
 
-createGoonStats b a r s c i l w ip = Stats b a r s c i l w 1 6.0 Nothing 1 ip Nothing 10
+createGoonStats b a r s c i l w init = Stats b a r s c i l w 1 6.0 Nothing init 1 Nothing 10
 createMagicGoonStats b a r s c i l w m ip = Stats b a r s c i l w 1 6.0 (Just m) 1 ip Nothing 10
 
 createGoon :: String -> Int -> Stats -> [(String, Int)] -> [String] -> [String] -> Maybe [Cyberware] -> Maybe [Program] -> Maybe [String]
-createGoon name rank stats skills weapons equipment cyberware programs spells = Goon name rank stats skills' weapons' equipment' cyberware programs spells
+createGoon name rank stats skills weapons armor equipment cyberware programs spells = Goon name rank stats skills' weapons' equipment' cyberware programs spells
     where
         skills' = [createSkill x y | (x,y) <- skills]
         weapons' = [getWeapon x | x <- weapons]
-        equipment' = [getArmor x | x <- equipment]
-
-printGoon :: Goon -> IO ()
-printGoon goon = do
-    putStrLn $ "Name: " ++ (goonName goon)
-    putStrLn "Stats:"
-    let statGetters = [getStat x | x <- [[y] | y <- "barscilw"] ++ ["ip"]]
-        stats = [(x, getter $ goonStats goon) | (x, getter) <- statGetters]
-        printListMaybe preface (Just x) = do
-            putStrLn preface
-            putStrLn . show $ x
-        printListMaybe preface (Nothing) = do
-            return ()
-    mapM_ putStrLn [x ++ ": " ++ show y | (x,y) <- stats]
-    putStrLn "Weapons: "
-    mapM_ putStrLn [showWeapon (goonStats goon) weapon | weapon <- (goonWeapons goon)]
-    putStrLn "Equipment:"
-    mapM_ putStrLn [show equipment | equipment <- (goonEquipment goon)]
-    printListMaybe "Cyberware: " (goonCyberware goon) 
-    printListMaybe "Programs: " (goonPrograms goon)
-    printListMaybe "Spells: " (goonSpells goon) 
-
+        equipment' = [getArmor x | x <- armor] ++ [getEquipment x | x <- equipment]
+{--
+rentacop = Goon "Corporate Security Unit" 2 stats skills weapons armor equipment cyberware programs spells
+    where
+        skills = [("Clubs", 7), ("Dodge", 5), ("Intimidation", 5), ("Pistols", 7), ("Unarmed Combat", 7)]
+--}         
 {--
 stooby = Goon "Stooby" (createGoonStats 4 5 4 6 2 3 3 4 1) 
     [createSkill x y | (x,y) <- [("Clubs", 7), ("Dodge", 5), ("Intimidation", 5), ("Pistols", 7), ("Unarmed Combat", 7)]]
@@ -83,3 +69,24 @@ fornis = Goon "Fornis" (createMagicGoonStats 3 3 3 3 3 3 5 5 4 1)
 
 goons = [stooby, crank, joeby, fornis]
 --}
+printGoon :: Goon -> IO ()
+printGoon goon = do
+    putStrLn $ "Name: " ++ (goonName goon)
+    putStrLn "Stats:"
+    let statGetters = [getStat x | x <- [[y] | y <- "barscilw"] ++ ["ip"]]
+        stats = [(x, getter $ goonStats goon) | (x, getter) <- statGetters]
+        printListMaybe preface (Just x) = do
+            putStrLn preface
+            putStrLn . show $ x
+        printListMaybe preface (Nothing) = do
+            return ()
+    mapM_ putStrLn [x ++ ": " ++ show y | (x,y) <- stats]
+    putStrLn "Weapons: "
+    mapM_ putStrLn [showWeapon (goonStats goon) weapon | weapon <- (goonWeapons goon)]
+    putStrLn "Equipment:"
+    mapM_ putStrLn [show equipment | equipment <- (goonEquipment goon)]
+    printListMaybe "Cyberware: " (goonCyberware goon) 
+    printListMaybe "Programs: " (goonPrograms goon)
+    printListMaybe "Spells: " (goonSpells goon) 
+
+
