@@ -23,12 +23,15 @@ data Goon = Goon {
 createGoonStats b a r s c i l w init = Stats b a r s c i l w 1 6.0 Nothing init 1 Nothing 10
 createMagicGoonStats b a r s c i l w m ip = Stats b a r s c i l w 1 6.0 (Just m) 1 ip Nothing 10
 
-createGoon :: String -> Int -> Stats -> [(String, Int)] -> [String] -> [String] -> Maybe [Cyberware] -> Maybe [Program] -> Maybe [String]
+createGoon :: String -> Int -> Stats -> [(String, Int)] -> [String] -> [String] -> [String] -> Maybe [Cyberware] -> Maybe [Program] -> Maybe [Spell] -> Goon
 createGoon name rank stats skills weapons armor equipment cyberware programs spells = Goon name rank stats skills' weapons' equipment' cyberware programs spells
     where
         skills' = [createSkill x y | (x,y) <- skills]
         weapons' = [getWeapon x | x <- weapons]
         equipment' = [getArmor x | x <- armor] ++ [getEquipment x | x <- equipment]
+
+getGoon :: String -> Goon
+getGoon name = undefined
 {--
 rentacop = Goon "Corporate Security Unit" 2 stats skills weapons armor equipment cyberware programs spells
     where
