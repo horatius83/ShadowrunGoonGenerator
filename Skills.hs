@@ -19,7 +19,13 @@ instance Show LinkedAttribute where
     show (LinkedAttribute name _) = show name
     show (SpecialAttribute name _) = show name 
 
-data Skill = Skill { skillName :: String, skillLevel :: SkillLevel, skillLinkedAttribute :: LinkedAttribute, skillIsDefaultable :: Bool, skillSpecialization :: Maybe Specialization} deriving (Show)
+data Skill = Skill { 
+    skillName :: String, 
+    skillLevel :: SkillLevel, 
+    skillLinkedAttribute :: LinkedAttribute, 
+    skillIsDefaultable :: Bool, 
+    skillSpecialization :: Maybe Specialization } | 
+    SkillGroup String Int [Skill] deriving (Show)
 
 skill name level la defaultable = Skill name (SkillLevel level) (LinkedAttribute attribName attribValue) defaultable Nothing
                                     where  (attribName, attribValue) = getStat la
