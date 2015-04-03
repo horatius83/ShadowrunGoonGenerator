@@ -14,7 +14,12 @@ data SkillLevel = Unaware | SkillLevel Int deriving (Show)
 
 data Specialization = Specialization String deriving (Show)
 
-data Skill = Skill String SkillLevel String Bool (Maybe Specialization) | SkillGroup String Int [Skill] deriving (Show)
+data Skill = Skill String SkillLevel String Bool (Maybe Specialization) | SkillGroup String SkillLevel [Skill] deriving (Show)
+
+createSkillLevel :: Int -> SkillLevel
+createSkillLevel level 
+    | level < 0 || level > 7 = error "Cannot have a skill that is higher than 7 or lower than 0."
+    | otherwise = SkillLevel level 
 
 skillName :: Skill -> String
 skillName (Skill name _ _ _ _) = name
@@ -34,6 +39,10 @@ getSkill name = findWithDefault (notFoundSkill name) name skillDb
 
 createSkill :: String -> SkillLevel -> Skill
 createSkill name level = undefined
+
+setSkillLevel :: Skill -> SkillLevel -> Skill
+setSkillLevel (Skill name level linkedAttribute defaultable specialization) newLevel = Skill name newLevel linkedAttribute defaultable specialization
+setSkillLevel (SkillGroup name level skills) newLevel = SkillGroup name newLevel $ map (\x -> setSkillLevel x newLevel) skills
 
 agilitySkills = [skill x 0 "a" False | x <- ["Archery", "Automatics", "Blades", "Clubs", "Escape Artist", "Exotic Melee Weapon (Specific)", "Exotic Ranged Weapon (Specific)", "Forgery", "Gunnery", "Gymnastics", "Heavy Weapons", "Infiltration", "Locksmith", "Longarms", "Palming", "Pistols", "Throwing Weapons", "Unarmed Combat"]]
 
