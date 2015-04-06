@@ -1,12 +1,13 @@
 module Skills
-    (Skill, 
-    getSkill, 
-    createSkill,
-    getSkillGroup,
-    getAllSkillGroups,
+    (
+        Skill(..), 
+        SkillLevel (..),
+        Specialization (..),
+        createSkillLevel,
+        createSkill,
 ) where
 
-import Data.Map (Map, findWithDefault, fromList, keys)
+import Data.Map (Map, findWithDefault, fromList, keys, member)
 import Data.List (intersperse, foldl')
 import Stats
 
@@ -35,19 +36,19 @@ notFoundSkill :: String -> Skill
 notFoundSkill x = Skill ("Skill: \"" ++ x ++ "\" not found") Unaware "" False Nothing
 
 -- get a typical skill
-getSkill name = findWithDefault (notFoundSkill name) name skillDb
+getSkill name = findWithDefault (notFoundSkill name) name skillsDb
 
 createSkill :: String -> SkillLevel -> Skill
 createSkill name level
-    | member name skillsDb = findWithDefault notFoundSkill name
+    | member name skillsDb = setSkillLevel level $ findWithDefault defaultSkill name skillsDb
+    | member name skillGroupsDb = setSkillLevel level $ findWithDefault defaultSkill name skillGroupsDb
+    | otherwise = defaultSkill 
+    where
+        defaultSkill = notFoundSkill name
 
-setSkillLevel :: Skill -> SkillLevel -> Skill
-setSkillLevel (Skill name level linkedAttribute defaultable) newSkillLevel = Skill name newSkillLevel linkedAttribute defaultable
-setSkillLevel (SkillGroup name level skills) newSkillLevel = SkillGroup name newSkillLevel $ map (\x -> setSkillLevel x newSkillLevel) skills
-
-setSkillLevel :: Skill -> SkillLevel -> Skill
-setSkillLevel (Skill name level linkedAttribute defaultable specialization) newLevel = Skill name newLevel linkedAttribute defaultable specialization
-setSkillLevel (SkillGroup name level skills) newLevel = SkillGroup name newLevel $ map (\x -> setSkillLevel x newLevel) skills
+setSkillLevel ::  SkillLevel -> Skill -> Skill
+setSkillLevel  newSkillLevel (Skill name level linkedAttribute defaultable specialization) = Skill name newSkillLevel linkedAttribute defaultable specialization
+setSkillLevel newSkillLevel (SkillGroup name level skills) = SkillGroup name newSkillLevel $ map (setSkillLevel newSkillLevel) skills
 
 agilitySkills = [skill x 0 "a" False | x <- ["Archery", "Automatics", "Blades", "Clubs", "Escape Artist", "Exotic Melee Weapon (Specific)", "Exotic Ranged Weapon (Specific)", "Forgery", "Gunnery", "Gymnastics", "Heavy Weapons", "Infiltration", "Locksmith", "Longarms", "Palming", "Pistols", "Throwing Weapons", "Unarmed Combat"]]
 
@@ -69,18 +70,21 @@ magicSkills = [Skill x (SkillLevel 0) "m" False Nothing | x <- ["Banishing", "Bi
 
 resonanceSkills = [Skill x (SkillLevel 0) "res" False Nothing | x <- ["Compiling", "Decompiling", "Registering"]]
 
-skillDb :: Map String Skill
-skillDb = fromList nameSkillTuples
+skillsDb :: Map String Skill
+skillsDb = fromList nameSkillTuples
     where
         allSkills = foldl' (++) [] [agilitySkills, bodySkills, reactionSkills, strengthSkills, charismaSkills, intuitionSkills, logicSkills, willpowerSkills, magicSkills, resonanceSkills]
         nameSkillTuples = [(skillName x, x) | x <- allSkills] 
 
 -- skill groups
-getSkillGroup :: String -> [String]
-getSkillGroup name = findWithDefault [] name skillGroupsDb
+getSkillGroup :: String -> Skill 
+getSkillGroup name = findWithDefault (notFoundSkill name) name skillGroupsDb
+
+getAllSkillGroups :: [String]
 getAllSkillGroups = keys skillGroupsDb
 
-skillGroupsDb = fromList [
+skillGroupsList :: [(String, [String])]
+skillGroupsList = [
     ("Athletics", ["Climbing", "Gymnastics", "Running", "Swimming"]),
     ("Biotech", ["Cybertechnology", "First Aid", "Medicine"]),
     ("Close Combat", ["Blades", "Clubs", "Unarmed Combat"]),
@@ -95,3 +99,7 @@ skillGroupsDb = fromList [
     ("Stealth", ["Disguise", "Infiltration", "Palming", "Shadowing"]),
     ("Tasking", ["Compiling", "Decompiling", "Registering"])] 
 
+
+skillGroupsDb = fromList [(name, parseTuple (name, skills)) | (name, skills) <- skillGroupsList] 
+    where
+        parseTuple (name, skills) = SkillGroup name (SkillLevel 0) $ map getSkill skills  

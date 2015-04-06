@@ -4,7 +4,7 @@ import Cyberware (Cyberware, BodyPart)
 import Hacking (Program)
 import Stats (Stats(..), getStat)
 import Weapons (Weapon, getWeapon, showWeapon)
-import Skills (Skill, createSkill)
+import Skills (Skill, createSkill, SkillLevel(..), createSkillLevel)
 import Spells (Spell)
 import Armor (getArmor)
 import Equipment (Equipment, getEquipment)
@@ -20,23 +20,32 @@ data Goon = Goon {
     goonPrograms :: Maybe [Program],
     goonSpells :: Maybe [Spell]} deriving (Show)
 
+createGoonStats :: Int -> Int -> Int -> Int -> Int -> Int -> Int -> Int -> Int -> Stats
 createGoonStats b a r s c i l w init = Stats b a r s c i l w 1 6.0 Nothing init 1 Nothing 10
-createMagicGoonStats b a r s c i l w m ip = Stats b a r s c i l w 1 6.0 (Just m) 1 ip Nothing 10
+
+createMagicGoonStats :: Int -> Int -> Int -> Int -> Int -> Int -> Int -> Int -> Int -> Int -> Stats
+createMagicGoonStats b a r s c i l w m init = Stats b a r s c i l w 1 6.0 (Just m) init 1 Nothing 10
 
 createGoon :: String -> Int -> Stats -> [(String, Int)] -> [String] -> [String] -> [String] -> Maybe [Cyberware] -> Maybe [Program] -> Maybe [Spell] -> Goon
 createGoon name rank stats skills weapons armor equipment cyberware programs spells = Goon name rank stats skills' weapons' equipment' cyberware programs spells
     where
-        skills' = [createSkill x y | (x,y) <- skills]
+        skills' = [createSkill x (SkillLevel y) | (x,y) <- skills]
         weapons' = [getWeapon x | x <- weapons]
         equipment' = [getArmor x | x <- armor] ++ [getEquipment x | x <- equipment]
 
 getGoon :: String -> Goon
 getGoon name = undefined
-{--
-rentacop = Goon "Corporate Security Unit" 2 stats skills weapons armor equipment cyberware programs spells
+
+rentacop = createGoon "Corporate Security Unit" 2 stats skills weapons armor equipment Nothing Nothing Nothing 
     where
-        skills = [("Clubs", 7), ("Dodge", 5), ("Intimidation", 5), ("Pistols", 7), ("Unarmed Combat", 7)]
---}         
+        stats = createGoonStats 3 3 4 3 3 3 2 3 7 
+        skills = [("Athletics", 3), ("Automatics", 3), ("Dodge", 3), ("Pistols", 3), ("Close Combat", 3)]
+        weapons = ["Fischetti Security 600 Light Pistol", "HK-227X", "Stun Baton"]
+        armor = ["Armor Vest"]
+        equipment = ["CMT Clip"]
+
+
+
 {--
 stooby = Goon "Stooby" (createGoonStats 4 5 4 6 2 3 3 4 1) 
     [createSkill x y | (x,y) <- [("Clubs", 7), ("Dodge", 5), ("Intimidation", 5), ("Pistols", 7), ("Unarmed Combat", 7)]]
