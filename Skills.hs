@@ -38,7 +38,12 @@ notFoundSkill x = Skill ("Skill: \"" ++ x ++ "\" not found") Unaware "" False No
 getSkill name = findWithDefault (notFoundSkill name) name skillDb
 
 createSkill :: String -> SkillLevel -> Skill
-createSkill name level = undefined
+createSkill name level
+    | member name skillsDb = findWithDefault notFoundSkill name
+
+setSkillLevel :: Skill -> SkillLevel -> Skill
+setSkillLevel (Skill name level linkedAttribute defaultable) newSkillLevel = Skill name newSkillLevel linkedAttribute defaultable
+setSkillLevel (SkillGroup name level skills) newSkillLevel = SkillGroup name newSkillLevel $ map (\x -> setSkillLevel x newSkillLevel) skills
 
 setSkillLevel :: Skill -> SkillLevel -> Skill
 setSkillLevel (Skill name level linkedAttribute defaultable specialization) newLevel = Skill name newLevel linkedAttribute defaultable specialization
