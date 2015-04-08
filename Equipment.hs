@@ -1,5 +1,5 @@
 module Equipment (
-    Equipment(Armor, Equipment), 
+    Equipment(..), 
     ArmorMod (ChemicalProtection, ChemicalSeal, FireResistance, Insulation, Nonconductivity, ShockFrills, ThermalDamping), 
     ArmorType (Body, Helmet, Shield), 
     armorName,
