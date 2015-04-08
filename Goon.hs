@@ -45,7 +45,6 @@ rentacop = createGoon "Corporate Security Unit" 2 stats skills weapons armor equ
         equipment = ["CMT Clip"]
 
 
-
 {--
 stooby = Goon "Stooby" (createGoonStats 4 5 4 6 2 3 3 4 1) 
     [createSkill x y | (x,y) <- [("Clubs", 7), ("Dodge", 5), ("Intimidation", 5), ("Pistols", 7), ("Unarmed Combat", 7)]]

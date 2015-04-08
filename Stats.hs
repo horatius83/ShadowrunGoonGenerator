@@ -1,8 +1,25 @@
-module Stats( Stats (Stats), getStat, getSpecialStat, statStrength ) where
+module Stats( Stats (Stats), getStat, getSpecialStat, statStrength, Initiative) where
 
 import Data.List
+import Data.Map (Map, fromList)
+import qualified Data.Set as S
 
-data Stats = Stats {
+type Stats = Map String Double
+
+createStats :: [(String, Double)] -> Stats
+createStats stats
+    | all (\(s,_) -> S.member s statNames) stats = fromList stats
+    | otherwise = error $ "The following values are not stats: " ++ unknownStats
+    where
+        unknownStatsString = foldl' (++) "" $ intersperse ", " unknownStats
+        unknownStats = map fst $ filter (\(s,_) -> not $ S.member s statNames) stats 
+
+statNames :: S.Set String
+statNames = S.fromList ["body", "agility", "reaction", "strength", "charisma", "intuition", "logic", "willpower",
+    "edge", "essense", "magic", "initiative", "initiative passes", "resonance", "condition monitor", 
+    "astral initiative", "matrix initiative"]
+
+{--data Stats = Stats {
     statBody :: Int, 
     statAgility :: Int, 
     statReaction :: Int, 
@@ -14,7 +31,7 @@ data Stats = Stats {
     statEdge :: Int,
     statEssense :: Double, 
     statMagic :: Maybe Int,
-    statInitiative :: Int,
+    statInitiative :: Int, 
     statInitiativePasses :: Int,
     statResonance :: Maybe Int,
     statConditionMonitor :: Int} deriving (Show)
@@ -39,3 +56,4 @@ getSpecialStat :: String -> (String, (Stats -> Maybe Int))
 getSpecialStat name = case name of
     "m" -> ("Magic", statMagic)
     "res" -> ("Resonance", statResonance)
+--}
