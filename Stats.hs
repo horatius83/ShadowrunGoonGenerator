@@ -33,9 +33,10 @@ getStat name = case name of
     "l" -> ("Logic", statLogic)
     "w" -> ("Willpower", statWillpower)
     "ip" -> ("Initiative Passes", statInitiativePasses)
-    otherwise -> ("Invalid Stat: " ++ name, \x -> 0)
+    _ -> ("Invalid Stat: " ++ name, \_ -> 0)
 
 getSpecialStat :: String -> (String, (Stats -> Maybe Int))
 getSpecialStat name = case name of
     "m" -> ("Magic", statMagic)
     "res" -> ("Resonance", statResonance)
+    _ -> ("Invalid Stat: " ++ name, \_ -> Nothing) 

@@ -1,13 +1,19 @@
 module Armor (getArmor) where
 
-import Equipment (Equipment (Armor), ArmorType(..), ArmorMod(..))
+import Equipment (Equipment (Armor), ArmorType(..), ArmorMod(..), armorName)
 import Data.Map
 
+armor :: String -> Int -> Int -> Equipment 
 armor name b i = Armor name b i Body []
 
+notFoundArmor :: String -> Equipment 
 notFoundArmor x = armor ("Could not find '" ++ x ++ "' in the armor database.") 0 0 
+
+getArmor :: String -> Equipment 
 getArmor x = findWithDefault (notFoundArmor x) x armorDb
-armorDb = fromList [(getName x, x) | x <- [
+
+armorDb :: Map String Equipment 
+armorDb = fromList [(armorName x, x) | x <- [
     armor "Clothing" 0 0, 
     armor "Feedback Clothing" 0 0, 
     armor "Leather Jacket" 2 2,
@@ -26,4 +32,3 @@ armorDb = fromList [(getName x, x) | x <- [
     Armor "Ballistic Shield" 6 4 Shield [],
     Armor "Riot Shield" 2 6 Shield [],
     Armor "Taser Shield" 2 6 Shield [Nonconductivity]]]
-    where getName (Armor name _ _ _ _) = name

@@ -31,6 +31,7 @@ instance Show Damage where
 getDamage :: Stats -> Damage -> (Int, Int, AP) 
 getDamage stats (Dmg (DmgPhysical f) ap) = (f (statStrength stats), 0, ap)
 getDamage stats (Dmg (DmgStun f) ap) = (0, f (statStrength stats), ap)
+getDamage _ _ = error "Can not calculate damage"
 
 data Magazine = Magazine { shotsRemaining :: Int, shots :: Int} deriving (Show)
 
@@ -68,7 +69,7 @@ melee :: String -> Damage -> WeaponType -> Int -> Weapon
 melee name damage wpnType reach = Weapon name damage wpnType (Just reach) Nothing Nothing Nothing Nothing 
 
 dmg :: Int -> Int -> Damage
-dmg hp ap = Dmg (DmgPhysical (\x -> hp)) (AP ap)
+dmg hp ap = Dmg (DmgPhysical (\_ -> hp)) (AP ap)
 
 physicalDmg :: (Int -> Int) -> Int -> Damage
 physicalDmg f ap = Dmg (DmgPhysical f) (AP ap)
@@ -82,7 +83,10 @@ notFoundWeapon x = melee ("Could not find '" ++ x ++ "' in weapon database.") (d
 getWeapon :: String -> Weapon
 getWeapon x = findWithDefault (notFoundWeapon x) x weaponDb
 
+weaponDb :: Map String Weapon
 weaponDb = fromList [(weaponName x, x) | x <- weaponList ++ bowList ]
+
+weaponList :: [Weapon]
 weaponList = [
     -- Blades
     melee "Combat Axe" (physicalDmg (\str -> 4 + div2 str) (-1)) Blade 2,
@@ -185,4 +189,5 @@ weaponList = [
 bow :: String -> Damage -> Int -> Weapon
 bow name damage minStrength = Weapon name damage Bow Nothing Nothing (Just [SingleShot]) (Just 1) (Just minStrength)
 
+bowList :: [Weapon]
 bowList = [bow ("Bow (Rating " ++ show x ++ ")") (dmg (x + 2) 0) x | x <- [1..12]]  
