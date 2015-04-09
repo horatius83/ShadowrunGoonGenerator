@@ -29,8 +29,8 @@ instance Show Damage where
     show Missile = show "Missile"
 
 getDamage :: Stats -> Damage -> (Int, Int, AP) 
-getDamage stats (Dmg (DmgPhysical f) ap) = (f (statStrength stats), 0, ap)
-getDamage stats (Dmg (DmgStun f) ap) = (0, f (statStrength stats), ap)
+getDamage stats (Dmg (DmgPhysical f) ap) = (f (round $ getStat "s" stats), 0, ap)
+getDamage stats (Dmg (DmgStun f) ap) = (0, f (round $ getStat "s" stats), ap)
 getDamage _ _ = error "Can not calculate damage"
 
 data Magazine = Magazine { shotsRemaining :: Int, shots :: Int} deriving (Show)
@@ -103,7 +103,7 @@ weaponList = [
     melee "Staff" (physicalDmg (\str -> 2 + div2 str) 0) Club 2,
     melee "Stun Baton" (Dmg (DmgStun (\_ -> 6)) Half) Club 1,
     -- Exotic Melee Weapons
-    melee "Monofilament Whip" (physicalDmg (\str -> 8) (-4)) Exotic 2,
+    melee "Monofilament Whip" (physicalDmg (\_ -> 8) (-4)) Exotic 2,
     melee "Pole Arm" (physicalDmg (\str -> 2 + div2 str) (-2)) Exotic 2,
     melee "Riot Shield" (Dmg (DmgStun (\str -> div2 str)) (AP 2)) Exotic 0,
     melee "Taser Armor/Shield" (Dmg (DmgStun (\_ -> 6)) Half) Exotic 0,
