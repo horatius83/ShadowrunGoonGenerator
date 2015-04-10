@@ -1,11 +1,13 @@
 module Goon (getGoon) where
 
+import Data.Map (insert)
+
 import Cyberware (Cyberware, BodyPart)
 import Hacking (Program)
 import Stats (Stats, createStatsShort, getStat)
 import Weapons (Weapon, getWeapon, showWeapon)
 import Skills (Skill, createSkill, SkillLevel(..), createSkillLevel)
-import Spells (Spell)
+import Spells (Spell, getSpell)
 import Armor (getArmor)
 import Equipment (Equipment, getEquipment)
 
@@ -50,6 +52,18 @@ rentacop = createGoon "Corporate Security Unit" 2 stats skills weapons armor equ
         weapons = ["Fischetti Security 600 Light Pistol", "HK-227X", "Stun Baton"]
         armor = ["Armor Vest"]
         equipment = ["CMT Clip"]
+
+rentaCopPrime = createGoon "CorpSec Lieutenant" 2 stats skills weapons armor equipment Nothing Nothing (Just spells)
+    where
+        baseStats = createMagicGoonStats 3 3 3 3 3 4 3 4 3 7
+        stats = insert "astral initiative" 8 $ insert "astral initiative passes" 3 baseStats
+        skills = [("Assensing",3), ("Astral Combat", 4), ("Conjuring", 3), ("Leadership", 2), ("Pistols", 2), ("Sorcery", 4)]
+        weapons = ["Fischetti Security 600 Light Pistol"]
+        armor = ["Armor Vest"]
+        equipment = ["Renraku Sensei"]
+        spells = [getSpell x | x <- ["Detect Life", "Light", "Physical Barrier", "Powerbolt", "Silence", "Stunball"]]
+-- Need a way to add spell focus to equipment
+
 
 printGoon :: Goon -> IO ()
 printGoon goon = do

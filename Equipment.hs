@@ -28,6 +28,7 @@ data Equipment =
     | Commlink { clModel :: String, clResponse :: Int, clSignal :: Int}
     | OS { osName :: String, osFirewall :: Int, osSystem :: Int}
     | Accessory { accessoryName :: String, accessoryDevice :: Int }
+    | Focus String Int
     | Equipment String deriving (Show)
 
 getEquipment :: String -> Equipment

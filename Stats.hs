@@ -34,8 +34,8 @@ statNames = S.fromList statNamesList
 statNamesList :: [String]
 statNamesList = ["body", "agility", "reaction", "strength", "charisma", "intuition", "logic", "willpower",
     "edge", "essense", "magic", "initiative", "initiative passes", "resonance", "condition monitor", 
-    "astral initiative", "matrix initiative"]
+    "astral initiative", "astral initiative passes", "matrix initiative"]
 
 shortStatToLong :: Map String String
-shortStatToLong = fromList $ zip ["b", "a", "r", "s", "c", "i", "l", "w", "e", "ess", "m", "init", "ip", "res", "cm", "astral init", "matrix init"] statNamesList
+shortStatToLong = fromList $ zip ["b", "a", "r", "s", "c", "i", "l", "w", "e", "ess", "m", "init", "ip", "res", "cm", "astral init", "astral ip", "matrix init"] statNamesList
 
