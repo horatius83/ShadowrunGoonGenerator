@@ -1,8 +1,8 @@
 module Equipment (
     Equipment(..), 
+    FocusType(..),
     ArmorMod (ChemicalProtection, ChemicalSeal, FireResistance, Insulation, Nonconductivity, ShockFrills, ThermalDamping), 
     ArmorType (Body, Helmet, Shield), 
-    armorName,
     getEquipment
 ) where
 
@@ -18,6 +18,8 @@ data ArmorMod = ChemicalProtection
 
 data ArmorType = Body | Helmet | Shield deriving (Show)    
 
+data FocusType = Spellcasting | Counterspelling | Sustaining | Summoning | Banishing | Binding | Weapon deriving (Show)
+
 data Equipment = 
     Armor { 
         armorName :: String, 
@@ -28,8 +30,8 @@ data Equipment =
     | Commlink { clModel :: String, clResponse :: Int, clSignal :: Int}
     | OS { osName :: String, osFirewall :: Int, osSystem :: Int}
     | Accessory { accessoryName :: String, accessoryDevice :: Int }
-    | Focus String Int
-    | Equipment String deriving (Show)
+    | Equipment String 
+    | Focus FocusType Int deriving (Show)
 
 getEquipment :: String -> Equipment
 getEquipment name = findWithDefault notFoundEquipment name equipmentDb 

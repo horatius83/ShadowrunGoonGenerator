@@ -1,4 +1,4 @@
-module Cyberware (Cyberware, BodyPart) where
+module Cyberware (Cyberware(..), BodyPart(..)) where
 
 import Stats (Stats)
 
