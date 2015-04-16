@@ -67,7 +67,7 @@ rentaCopLt = Goon "CorpSec Lieutenant" 2 stats skills weapons equipment (Just cy
         skills = createSkillList [("Assensing", 3), ("Astral Combat", 4), ("Conjuring", 3), ("Leadership", 2), ("Pistols", 2), ("Sorcery", 4)]
         weapons = [getWeapon "Fischetti Security 600 Light Pistol"]
         equipment = [getArmor "Armor Vest", getEquipment "Renraku Sensei", Focus Spellcasting 2] 
-        cyberware = [CyberLimb Arm (Body 1) 1.0 15]
+        cyberware = [CyberLimb "Full Arm" Arm (Just $ Body 1) 1.0 15 []]
         spells = map getSpell ["Detect Life", "Light", "Physical Barrier", "Powerbolt", "Silence", "Stunball"]        
 
 printGoon :: Goon -> IO ()
@@ -75,5 +75,3 @@ printGoon goon = do
     putStrLn $ "Name: " ++ (goonName goon)
     putStrLn "Stats:"
      
-
-

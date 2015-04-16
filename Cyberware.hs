@@ -1,8 +1,28 @@
 module Cyberware (Cyberware(..), BodyPart(..), CyberLimbEnhancement(..)) where
 
+import Data.Map (Map, lookup, fromList)
+import Data.List (foldl')
+import Prelude hiding (lookup)
+
 data BodyPart = Arm | Leg | Torso | Hand | Foot | Forearm | LowerLeg | Head | Eyes | Ears deriving (Show)
 data CyberLimbEnhancement = Armor Int | Body Int | Strength Int | Agility Int deriving (Show)
-data Cyberware = CyberLimb BodyPart CyberLimbEnhancement Double Int | Cyberware BodyPart Double Int deriving (Show)
+data CyberLimbAccessory = CyberLimbAccessory String Int BodyPart deriving (Show)
+data Cyberware = CyberLimb String BodyPart (Maybe CyberLimbEnhancement) Double Int [CyberLimbAccessory] | Cyberware String BodyPart Double Int deriving (Show)
+
+getCyberware :: String -> Maybe Cyberware
+getCyberware name = lookup name cyberwareDb
+
+getName :: Cyberware -> String
+getName (CyberLimb name _ _ _ _ _) = name
+getName (Cyberware name _ _ _ ) = name 
+
+cyberwareDb :: Map String Cyberware
+cyberwareDb = fromList $ cyberwareList ++ cyberlimbList 
+    where
+        createCyberwareList tuples bodyPart = [(name, Cyberware name bodyPart essense capacity) | (name, essense, capacity) <- tuples]
+        cyberwareTuples = [(Head, headware), (Eyes, eyeware), (Ears, earware), (Torso, bodyware)]
+        cyberwareList = foldl' (++) [] $ [createCyberwareList tuples part | (part, tuples) <- cyberwareTuples] 
+        cyberlimbList = [(name, CyberLimb name part Nothing essense capacity []) | (name, essense, capacity, part) <- cyberlimbs]  
 
 headware :: [(String, Double, Int)]
 headware = [
@@ -67,21 +87,32 @@ bodyware = [
         ++ [("Skillwires " ++ (show i), 0.2 * fromIntegral i, 0) | i <- [1..5] :: [Int]]
         ++ [("Wired Reflexes " ++ (show i), j, 0) | (i,j) <- [(1, 2.0), (2, 3.0), (3, 5.0)] :: [(Int, Double)]] 
 
-cyberlimbs :: [(String, Double, Int)]
-cyberlimbs = [("Obvious " ++ (show i), j, k) | (i,j,k) <- [
-    ("Full Arm", 1.0, 15),
-    ("Full Leg", 1.0, 20),
-    ("Hand", 0.25, 4),
-    ("Foot", 0.25, 4),
-    ("Lower Arm", 0.45, 10),
-    ("Lower Leg", 0.45, 12),
-    ("Torso", 1.5, 10),
-    ("Skull", 0.75, 4)]]
-        ++ [("Synthetic " ++ (show i), j, k) | (i,j,k) <- [
-                ("Full Arm", 1.0, 8),
-                ("Full Leg", 1.0, 10),
-                ("Hand", 0.25, 2),
-                ("Foot", 0.25, 2),
-                ("Lower Arm", 0.45, 5),
-                ("Lower Leg", 0.45, 6),
-                ("Torso", 1.5, 5)]]
+cyberlimbs :: [(String, Double, Int, BodyPart)]
+cyberlimbs = [("Obvious " ++ (show i), j, k, l) | (i,j,k,l) <- [
+    ("Full Arm", 1.0, 15, Arm),
+    ("Full Leg", 1.0, 20, Leg),
+    ("Hand", 0.25, 4, Hand),
+    ("Foot", 0.25, 4, Foot),
+    ("Lower Arm", 0.45, 10, Arm),
+    ("Lower Leg", 0.45, 12, Leg),
+    ("Torso", 1.5, 10, Torso),
+    ("Skull", 0.75, 4, Head)]]
+        ++ [("Synthetic " ++ (show i), j, k, l) | (i,j,k,l) <- [
+                ("Full Arm", 1.0, 8, Arm),
+                ("Full Leg", 1.0, 10, Leg),
+                ("Hand", 0.25, 2, Hand),
+                ("Foot", 0.25, 2, Foot),
+                ("Lower Arm", 0.45, 5, Arm),
+                ("Lower Leg", 0.45, 6, Leg),
+                ("Torso", 1.5, 5, Torso)]]
+
+cyberLimbAccessories :: Map String CyberLimbAccessory
+cyberLimbAccessories = fromList [(name, convertToCyberAcc name capacity part) | (name, capacity, part) <- accs] 
+    where
+        convertToCyberAcc name capacity part = CyberLimbAccessory name capacity part
+        accs = [
+            ("Cyberarm Gyromount", 4, Arm),
+            ("Cyberarm Slide", 8, Arm)]
+                ++ [("Large Smuggling Compartment in " ++ i, 5, l) | (i,l) <- [("Arm", Arm), ("Leg", Leg)]]
+                ++ [("Cyber Holster in " ++ i, 7, j) | (i,j) <- [("Arm", Arm), ("Leg", Leg), ("Torso", Torso)]]
+                ++ [("Hydraulic Jacks " ++ (show i), i, Leg) | i <- [1..6]]
