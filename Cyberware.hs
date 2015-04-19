@@ -1,12 +1,14 @@
 module Cyberware (Cyberware(..), BodyPart(..), CyberLimbEnhancement(..)) where
 
+import Weapons (Weapon(..), WeaponType(..))
 import Data.Map (Map, lookup, fromList)
 import Data.List (foldl')
 import Prelude hiding (lookup)
 
 data BodyPart = Arm | Leg | Torso | Hand | Foot | Forearm | LowerLeg | Head | Eyes | Ears deriving (Show)
 data CyberLimbEnhancement = Armor Int | Body Int | Strength Int | Agility Int deriving (Show)
-data CyberLimbAccessory = CyberLimbAccessory String Int BodyPart deriving (Show)
+data CyberWeaponAccessory = CyberWeaponAccessory String Double Int deriving (Show)
+data CyberLimbAccessory = CyberLimbAccessory String Int BodyPart | CyberWeapon Double Int Weapon [CyberWeaponAccessory] BodyPart deriving (Show)
 data Cyberware = CyberLimb String BodyPart (Maybe CyberLimbEnhancement) Double Int [CyberLimbAccessory] | Cyberware String BodyPart Double Int deriving (Show)
 
 getCyberware :: String -> Maybe Cyberware
@@ -116,3 +118,27 @@ cyberLimbAccessories = fromList [(name, convertToCyberAcc name capacity part) | 
                 ++ [("Large Smuggling Compartment in " ++ i, 5, l) | (i,l) <- [("Arm", Arm), ("Leg", Leg)]]
                 ++ [("Cyber Holster in " ++ i, 7, j) | (i,j) <- [("Arm", Arm), ("Leg", Leg), ("Torso", Torso)]]
                 ++ [("Hydraulic Jacks " ++ (show i), i, Leg) | i <- [1..6]]
+
+
+createCyberWeapon :: Weapon -> [CyberWeaponAccessory] -> BodyPart -> Maybe CyberLimbAccessory
+createCyberWeapon weapon accessories part = 
+    case weaponType weapon of
+        HoldOut -> cw 0.15 2
+        LightPistol -> cw 0.35 4
+        MachinePistol -> cw 0.4 4
+        HeavyPistol -> cw 0.6 6
+        SubMachineGun -> cw 1.0 10
+        Shotgun -> cw 1.1 11
+        GrenadeLauncher -> cw 1.5 15
+        _ -> Nothing
+        where
+            cw essense capacity = Just $ CyberWeapon essense capacity weapon accessories part
+        
+cyberWeaponAccessories :: Map String CyberWeaponAccessory
+cyberWeaponAccessories = fromList [(name, CyberWeaponAccessory name essense capacity) | (name, essense, capacity) <- accessories]
+    where
+        accessories = [
+            ("External Clip Port", 0.1, 1),
+            ("Laser Sight", 0.1, 1),
+            ("Silencer", 0.2, 2),
+            ("Sound Suppressor", 0.3, 3)]

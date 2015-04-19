@@ -1,7 +1,7 @@
 module Weapons 
     (Magazine, 
-    WeaponType, 
-    Weapon,
+    WeaponType(..), 
+    Weapon(..),
     Damage (Dmg),
     weaponDb,
     getWeapon,
