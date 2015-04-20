@@ -3,6 +3,8 @@ module Weapons
     WeaponType(..), 
     Weapon(..),
     Damage (Dmg),
+    AP(..),
+    DamageType(..),
     weaponDb,
     getWeapon,
     dmg,
