@@ -1,4 +1,4 @@
-module Cyberware (Cyberware(..), BodyPart(..), CyberLimbEnhancement(..)) where
+module Cyberware (Cyberware(..), BodyPart(..), CyberLimbEnhancement(..), cyberwareDb) where
 
 import Weapons (Weapon(..), WeaponType(..), AP(..), DamageType(..), Damage(..))
 import Data.Map (Map, lookup, fromList)
