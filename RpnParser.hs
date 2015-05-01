@@ -1,14 +1,18 @@
-module RpnParser (parseRpn) where
+module RpnParser (parseRpn, parseRpnFromList) where
 
-import Data.Char (isAlphaNum)
 import Data.List (foldl')
 
-parseRpn :: String -> (String -> String) -> Double
-parseRpn expression varToNumber = head $ foldl' parse [] tokens
+parseRpn :: String ->  Double
+parseRpn expression = parseRpnFromList tokens
     where
-        tokens = map varToNumber $ words expression
+        tokens = words expression
+        
+parseRpnFromList :: [String] -> Double
+parseRpnFromList tokens = head $ foldl' parse [] tokens
+    where
         parse (x:y:xs) "+" = x + y : xs
-        parse (x:y:xs) "-" = x - y : xs
-        parse (x:y:xs) "/" = x / y : xs
+        parse (x:y:xs) "-" = y - x : xs
+        parse (x:y:xs) "/" = y / x : xs
         parse (x:y:xs) "*" = x * y : xs
         parse xs x = (read x):xs 
+

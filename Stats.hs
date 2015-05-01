@@ -6,7 +6,6 @@ import Data.Map (Map, fromList, lookup)
 import qualified Data.Set as S
 import Data.Maybe (fromJust)
 
-
 type Stats = Map String Double
 
 getStat :: String -> Stats -> Double

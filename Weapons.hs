@@ -12,29 +12,32 @@ module Weapons
     showWeapon 
 ) where
 
-import Data.Map hiding (foldl)
+import Data.Map (lookup, member, findWithDefault, Map, fromList) 
+import RpnParser (parseRpnFromList)
 import Stats
 import Data.List
+import Data.Maybe (fromJust)
 
 data AP = AP Int | Half deriving (Show)
 
-data DamageType = DmgPhysical (Int -> Int) | DmgStun (Int -> Int)
-data Damage = Dmg DamageType AP | Grenade | Chemical | SpecialDmg AP | Toxin AP | Missile
+data DamageType = DmgPhysical String | DmgStun String deriving (Show)
+data Damage = Dmg DamageType AP | Grenade | Chemical | SpecialDmg AP | Toxin AP | Missile deriving (Show)
 
-instance Show Damage where
-    show (Dmg _ (AP ap)) = show "AP: " ++ (show ap)
-    show (Dmg _ (Half)) = show "AP: -Half"
-    show Grenade = show "Grenade"
-    show Chemical = show "Chemical"
-    show (SpecialDmg ap) = show "Special" ++ (show ap)
-    show (Toxin ap) = show "Toxin" ++ (show ap)
-    show Missile = show "Missile"
+replaceStatsWithValues :: String -> Stats -> [String]
+replaceStatsWithValues rpn stats = Data.List.map convertToken tokens
+    where
+        tokens = words rpn
+        convertToken token
+            | token `member` shortStatToLong = show $ fromJust $ Data.Map.lookup (longName token) stats
+            | otherwise = token
+        longName x = fromJust $ Data.Map.lookup x shortStatToLong
+ 
 
 getDamage :: Stats -> Damage -> (Int, Int, AP) 
-getDamage stats (Dmg (DmgPhysical f) ap) = (f (round $ getStat "s" stats), 0, ap)
-getDamage stats (Dmg (DmgStun f) ap) = (0, f (round $ getStat "s" stats), ap)
+getDamage stats (Dmg (DmgPhysical rpn) ap) = (round $ parseRpnFromList $ replaceStatsWithValues rpn stats, 0, ap)
+getDamage stats (Dmg (DmgStun rpn) ap) = (0, round $ parseRpnFromList $ replaceStatsWithValues rpn stats, ap)
 getDamage _ _ = error "Can not calculate damage"
-
+            
 data Magazine = Magazine { shotsRemaining :: Int, shots :: Int} deriving (Show)
 
 data WeaponMode = SingleShot | SemiAutomatic | BurstFire | Automatic deriving (Show)
@@ -71,16 +74,13 @@ melee :: String -> Damage -> WeaponType -> Int -> Weapon
 melee name damage wpnType reach = Weapon name damage wpnType (Just reach) Nothing Nothing Nothing Nothing 
 
 dmg :: Int -> Int -> Damage
-dmg hp ap = Dmg (DmgPhysical (\_ -> hp)) (AP ap)
+dmg hp ap = Dmg (DmgPhysical $ show hp) (AP ap)
 
-physicalDmg :: (Int -> Int) -> Int -> Damage
-physicalDmg f ap = Dmg (DmgPhysical f) (AP ap)
-
-div2 :: Int -> Int
-div2 x = x `div` 2
+physicalDmg :: String -> Int -> Damage
+physicalDmg formula ap = Dmg (DmgPhysical formula) (AP ap) 
 
 notFoundWeapon :: String -> Weapon
-notFoundWeapon x = melee ("Could not find '" ++ x ++ "' in weapon database.") (dmg 0 0) Blade 0
+notFoundWeapon x = melee ("Could not find '" ++ x ++ "' in weapon database.") (Dmg (DmgPhysical "0") (AP 0)) Blade 0
 
 getWeapon :: String -> Weapon
 getWeapon x = findWithDefault (notFoundWeapon x) x weaponDb
@@ -91,38 +91,38 @@ weaponDb = fromList [(weaponName x, x) | x <- weaponList ++ bowList ]
 weaponList :: [Weapon]
 weaponList = [
     -- Blades
-    melee "Combat Axe" (physicalDmg (\str -> 4 + div2 str) (-1)) Blade 2,
-    melee "Forearm Snap Blades" (physicalDmg (\str -> 2 + div2 str) 0) Blade 0,
-    melee "Katana" (physicalDmg (\str -> 3 + div2 str) (-1)) Blade 1,
-    melee "Knife" (physicalDmg (\str -> 1 + div2 str) 0) Blade 0,
-    melee "Monofilament Sword" (physicalDmg (\str -> 3 + div2 str) (-1)) Blade 1,
-    melee "Survival Knife" (physicalDmg (\str -> 1 + div2 str) (-1)) Blade 0,
-    melee "Sword" (physicalDmg (\str -> 3 + div2 str) 0) Blade 1,
+    melee "Combat Axe" (physicalDmg "s 2 / 4 +" (-1)) Blade 2,
+    melee "Forearm Snap Blades" (physicalDmg "s 2 / 2 +" 0) Blade 0,
+    melee "Katana" (physicalDmg "s 2 / 3 +" (-1)) Blade 1,
+    melee "Knife" (physicalDmg  "s 2 / 1 +" 0) Blade 0,
+    melee "Monofilament Sword" (physicalDmg "s 2 / 3 +" (-1)) Blade 1,
+    melee "Survival Knife" (physicalDmg "s 2 / 1 +" (-1)) Blade 0,
+    melee "Sword" (physicalDmg "s 2 / 3 +" 0) Blade 1,
     --Clubs
-    melee "Club" (physicalDmg (\str -> 1 + div2 str) 0) Club 1,
-    melee "Extendable Baton" (physicalDmg (\str -> 1 + div2 str) 0) Club 1,
-    melee "Sap" (physicalDmg (\str -> 1 + div2 str) 0) Club 0,
-    melee "Staff" (physicalDmg (\str -> 2 + div2 str) 0) Club 2,
-    melee "Stun Baton" (Dmg (DmgStun (\_ -> 6)) Half) Club 1,
+    melee "Club" (physicalDmg "s 2 / 1 +" 0) Club 1,
+    melee "Extendable Baton" (physicalDmg "s 2 / 1 +" 0) Club 1,
+    melee "Sap" (physicalDmg "s 2 / 1 +" 0) Club 0,
+    melee "Staff" (physicalDmg "s 2 / 2 +" 0) Club 2,
+    melee "Stun Baton" (Dmg (DmgStun "6") Half) Club 1,
     -- Exotic Melee Weapons
-    melee "Monofilament Whip" (physicalDmg (\_ -> 8) (-4)) Exotic 2,
-    melee "Pole Arm" (physicalDmg (\str -> 2 + div2 str) (-2)) Exotic 2,
-    melee "Riot Shield" (Dmg (DmgStun (\str -> div2 str)) (AP 2)) Exotic 0,
-    melee "Taser Armor/Shield" (Dmg (DmgStun (\_ -> 6)) Half) Exotic 0,
+    melee "Monofilament Whip" (physicalDmg "8" (-4)) Exotic 2,
+    melee "Pole Arm" (physicalDmg "s 2 / 2 +" (-2)) Exotic 2,
+    melee "Riot Shield" (Dmg (DmgStun "s 2 /") (AP 2)) Exotic 0,
+    melee "Taser Armor/Shield" (Dmg (DmgStun "6") Half) Exotic 0,
     -- Unarmed
-    melee "Shock Glove" (Dmg (DmgStun (\_ -> 5)) Half) Unarmed 0,
-    melee "Shock Frills" (Dmg (DmgStun (\_ -> 6)) Half) Unarmed 0,
+    melee "Shock Glove" (Dmg (DmgStun "5") Half) Unarmed 0,
+    melee "Shock Frills" (Dmg (DmgStun "6") Half) Unarmed 0,
     -- Bows (Calculated in a separate Bow list)
     -- Crossbows   
     ranged "Light Crossbow" (dmg 3 0) Crossbow [] 4,
     ranged "Medium Crossbow" (dmg 5 0) Crossbow [] 4,
     ranged "Heavy Crossbow" (dmg 7 0) Crossbow [] 4,
     -- Throwing Weapons
-    melee "Shuriken" (physicalDmg (\str -> div2 str) 0) ThrowingWeapon 0,
-    melee "Throwing Knife" (physicalDmg (\str -> 1 + div2 str) 0) ThrowingWeapon 0,
+    melee "Shuriken" (physicalDmg "s 2 /" 0) ThrowingWeapon 0,
+    melee "Throwing Knife" (physicalDmg "s 2 / 1 +" 0) ThrowingWeapon 0,
     -- Tasers
-    ranged "Defiance EX Shocker" (Dmg (DmgStun (\_ -> 8)) Half) Taser [SingleShot] 4,
-    ranged "Yamaha Pulsar" (Dmg (DmgStun (\_ -> 6)) Half) Taser [SemiAutomatic] 4,
+    ranged "Defiance EX Shocker" (Dmg (DmgStun "8") Half) Taser [SingleShot] 4,
+    ranged "Yamaha Pulsar" (Dmg (DmgStun "6") Half) Taser [SemiAutomatic] 4,
     -- Hold Outs
     ranged "Raecor Sting" (dmg 6 5) HoldOut [SingleShot] 5,
     ranged "Streetline Special" (dmg 4 0) HoldOut [SingleShot] 6,
