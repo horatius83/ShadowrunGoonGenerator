@@ -1,6 +1,5 @@
 module Goon (getGoon) where
 
-
 import Cyberware (Cyberware(..), BodyPart(..), CyberLimbEnhancement(..))
 import Hacking (Program)
 import Stats (Stats, createStatsShort)
@@ -22,6 +21,21 @@ data Goon = Goon {
     goonCyberware :: Maybe [Cyberware],
     goonPrograms :: Maybe [Program],
     goonSpells :: Maybe [Spell]} deriving (Show)
+
+generateGoon :: String -> [Skill] -> Goon
+generateGoon name skills = undefined
+-- If he has skills in magic, then he's a magic goon
+--  determine what stats to raise for magic
+--  raise those stats based on the rating
+--  choose random spells that correspond to those skills
+-- If he has skills in hacking, then he's a hacker
+--  determine what stats to raise for a hacker
+--  choose random programs to correspond to those skills
+-- Otherwise he's a physical goon
+-- A physical goon can be a melee goon, ranged goon, or heavy goon
+-- melee: strong melee weapon, with a pistol or heavy pistol for backup, medium-heavy armor (depending on rating)
+-- ranged: strong ranged weapon, a melee weapon for backup, light-heavy armor (depending on rating)
+-- heavy: strong ranged weapon (Grenade launcher / Rockets at the higher level), strong melee weapon, heavy armor
 
 createGoonStats :: Int -> Int -> Int -> Int -> Int -> Int -> Int -> Int -> Int -> Stats
 createGoonStats b a r s c i l w init = createStatsShort $ createBaseStats b a r s c i l w 1 init 1 10 
@@ -69,8 +83,6 @@ rentaCopLt = Goon "CorpSec Lieutenant" 2 stats skills weapons equipment (Just cy
         equipment = [getArmor "Armor Vest", getEquipment "Renraku Sensei", Focus Spellcasting 2] 
         cyberware = [CyberLimb "Full Arm" Arm (Just $ Body 1) 1.0 15 []]
         spells = map getSpell ["Detect Life", "Light", "Physical Barrier", "Powerbolt", "Silence", "Stunball"]        
-
-generateGoon name skills = undefined 
 
 printGoon :: Goon -> IO ()
 printGoon goon = do
