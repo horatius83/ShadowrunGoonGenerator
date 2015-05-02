@@ -14,7 +14,8 @@ data SkillLevel = Unaware | SkillLevel Int deriving (Show)
 
 data Specialization = Specialization String deriving (Show)
 
-data Skill = Skill String SkillLevel String Bool (Maybe Specialization) | SkillGroup String SkillLevel [Skill] deriving (Show)
+newtype Defaultable = Defaultable Bool deriving (Show)
+data Skill = Skill String SkillLevel String Defaultable (Maybe Specialization) | SkillGroup String SkillLevel [Skill] deriving (Show)
 
 createSkillLevel :: Int -> SkillLevel
 createSkillLevel level 
@@ -29,10 +30,10 @@ skillName (SkillGroup name _ skills) = name ++ "(" ++ skillNamesString ++ ")"
         skillNamesString = foldl' (++) [] skillNames
 
 skill :: String -> Int -> String -> Bool -> Skill
-skill name level la defaultable = Skill name (SkillLevel level) la defaultable Nothing
+skill name level la defaultable = Skill name (SkillLevel level) la (Defaultable defaultable) Nothing
 
 notFoundSkill :: String -> Skill
-notFoundSkill x = Skill ("Skill: \"" ++ x ++ "\" not found") Unaware "" False Nothing
+notFoundSkill x = Skill ("Skill: \"" ++ x ++ "\" not found") Unaware "" (Defaultable False) Nothing
 
 -- get a typical skill
 getSkill :: String -> Skill
@@ -75,10 +76,10 @@ willpowerSkills :: [Skill]
 willpowerSkills = [skill "Astral Combat" 0 "w" False, skill "Survival" 0 "w" True]
 
 magicSkills :: [Skill]
-magicSkills = [Skill x (SkillLevel 0) "m" False Nothing | x <- ["Banishing", "Binding", "Counterspelling", "Ritual Spellcasting", "Spellcasting", "Summoning"]]
+magicSkills = [Skill x (SkillLevel 0) "m" (Defaultable False) Nothing | x <- ["Banishing", "Binding", "Counterspelling", "Ritual Spellcasting", "Spellcasting", "Summoning"]]
 
 resonanceSkills :: [Skill]
-resonanceSkills = [Skill x (SkillLevel 0) "res" False Nothing | x <- ["Compiling", "Decompiling", "Registering"]]
+resonanceSkills = [Skill x (SkillLevel 0) "res" (Defaultable False) Nothing | x <- ["Compiling", "Decompiling", "Registering"]]
 
 skillsDb :: Map String Skill
 skillsDb = fromList nameSkillTuples

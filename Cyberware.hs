@@ -136,10 +136,10 @@ createCyberWeapon weapon accessories part =
 createCyberMeleeWeapon :: String -> Maybe CyberLimbAccessory
 createCyberMeleeWeapon name = 
     case name of
-        "Hand Blade" -> Just $ CyberWeapon 0.25 3 (Weapon "Hand Blade" (Dmg (DmgPhysical (\x -> 2 + x `div` 2))  (AP 0)) Blade Nothing Nothing Nothing Nothing Nothing) [] Hand
-        "Hand Razors" -> Just $ CyberWeapon 0.2 2 (Weapon "Hand Razors" (Dmg (DmgPhysical (\x -> 1 + x `div` 2)) (AP 0)) Blade Nothing Nothing Nothing Nothing Nothing) [] Hand
-        "Spur" -> Just $ CyberWeapon 0.3 3 (Weapon "Spur" (Dmg (DmgPhysical (\x -> 3 + x `div` 2)) (AP 0)) Blade Nothing Nothing Nothing Nothing Nothing) [] Hand
-        "Shock Hand" -> Just $ CyberWeapon 0.25 3 (Weapon "Shock Hand" (Dmg (DmgStun (\x -> 6)) Half) Unarmed Nothing Nothing Nothing (Just 10) Nothing) [] Hand
+        "Hand Blade" -> Just $ CyberWeapon 0.25 3 (Weapon "Hand Blade" (Dmg (DmgPhysical "s 2 / 2 +")  (AP 0)) Blade Nothing Nothing Nothing Nothing Nothing) [] Hand
+        "Hand Razors" -> Just $ CyberWeapon 0.2 2 (Weapon "Hand Razors" (Dmg (DmgPhysical "s 2 / 1 +") (AP 0)) Blade Nothing Nothing Nothing Nothing Nothing) [] Hand
+        "Spur" -> Just $ CyberWeapon 0.3 3 (Weapon "Spur" (Dmg (DmgPhysical "s 2 / 3 +") (AP 0)) Blade Nothing Nothing Nothing Nothing Nothing) [] Hand
+        "Shock Hand" -> Just $ CyberWeapon 0.25 3 (Weapon "Shock Hand" (Dmg (DmgStun "6") Half) Unarmed Nothing Nothing Nothing (Just 10) Nothing) [] Hand
         _ -> Nothing
         
 cyberWeaponAccessories :: Map String CyberWeaponAccessory

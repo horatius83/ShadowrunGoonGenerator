@@ -70,6 +70,8 @@ rentaCopLt = Goon "CorpSec Lieutenant" 2 stats skills weapons equipment (Just cy
         cyberware = [CyberLimb "Full Arm" Arm (Just $ Body 1) 1.0 15 []]
         spells = map getSpell ["Detect Life", "Light", "Physical Barrier", "Powerbolt", "Silence", "Stunball"]        
 
+generateGoon name skills = undefined 
+
 printGoon :: Goon -> IO ()
 printGoon goon = do
     putStrLn $ "Name: " ++ (goonName goon)
