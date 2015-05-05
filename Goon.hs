@@ -10,7 +10,7 @@ import Armor (getArmor)
 import Equipment (Equipment(..), getEquipment, FocusType(..))
 
 import Prelude hiding (init, foldl)
-import Data.Map (empty, insertWith, insert, fromList, foldl, member, (!))
+import Data.Map (empty, insertWith, insert, fromList, member, (!), foldlWithKey)
 import Data.List (foldl')
 
 data Goon = Goon {
@@ -44,11 +44,11 @@ generateGoon name skills = undefined
 getGoonType :: [Skill] -> GoonType
 getGoonType skills = linkedAttributes ! (fst maxAttribute) 
     where
-        maxAttribute = foldl (\a@(attrib, level) b@(attrib', level') -> if level' > level then b else a) ("a", 0) skillsCount 
+        maxAttribute = foldlWithKey (\a@(attrib, level) attrib' level' -> if level' > level then (attrib', level') else a) ("a", 0) skillsCount 
         linkedAttributes =  fromList [("b", Berzerker), ("a", Gunman), ("r", Pilot), ("s", Berzerker), ("c", Face), ("i", Hacker), ("w", Magician), ("l", Hacker), ("m", Magician), ("res", Hacker)]
         skillsCount = foldl' countGoonType empty $ filter isLinkedAttribute skills
         isLinkedAttribute (Skill _ _ stat _ _) = stat `member` linkedAttributes
-        isLinkedAttribute (SkillGroup _ _ skills) = all isLinkedAttribute skills
+        isLinkedAttribute (SkillGroup _ _ skillGroupSkills) = all isLinkedAttribute skillGroupSkills
         countGoonType skillMap (Skill _ (SkillLevel level) linkedStat _ _)
             | linkedStat `member` skillMap = insertWith (+) linkedStat level skillMap
             | otherwise = insert linkedStat level skillMap 
