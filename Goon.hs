@@ -2,13 +2,13 @@ module Goon (getGoon) where
 
 import Cyberware (Cyberware(..), BodyPart(..), CyberLimbEnhancement(..))
 import Hacking (Program)
-import Stats (Stats, createStatsShort)
+import Stats (Stats, createStatsShort, BP(..), MetaType(..))
 import Weapons (Weapon, getWeapon)
 import Skills (Skill(..), createSkill, SkillLevel(..))
 import Spells (Spell, getSpell)
 import Armor (getArmor)
 import Equipment (Equipment(..), getEquipment, FocusType(..))
-
+import System.Random
 import Prelude hiding (init, foldl)
 import Data.Map (empty, insertWith, insert, fromList, member, (!), foldlWithKey)
 import Data.List (foldl')
@@ -22,24 +22,23 @@ data Goon = Goon {
     goonEquipment :: [Equipment],
     goonCyberware :: Maybe [Cyberware],
     goonPrograms :: Maybe [Program],
-    goonSpells :: Maybe [Spell]} deriving (Show)
+    goonSpells :: Maybe [Spell],
+    goonMetaType :: MetaType} deriving (Show)
 
 data GoonType = Hacker | Magician | Berzerker | Gunman | Face | Pilot deriving (Show)
 
-generateGoon :: String -> [Skill] -> Goon
-generateGoon name skills = undefined
--- If he has skills in magic, then he's a magic goon
---  determine what stats to raise for magic
---  raise those stats based on the rating
---  choose random spells that correspond to those skills
--- If he has skills in hacking, then he's a hacker
---  determine what stats to raise for a hacker
---  choose random programs to correspond to those skills
--- Otherwise he's a physical goon
--- A physical goon can be a melee goon, ranged goon, or heavy goon
--- melee: strong melee weapon, with a pistol or heavy pistol for backup, medium-heavy armor (depending on rating)
--- ranged: strong ranged weapon, a melee weapon for backup, light-heavy armor (depending on rating)
--- heavy: strong ranged weapon (Grenade launcher / Rockets at the higher level), strong melee weapon, heavy armor
+generateGoon :: GoonType -> BP -> Goon
+generateGoon goonType (BP bp) = undefined 
+
+selectMetaType :: GoonType -> MetaType
+selectMetaType goonType = undefined
+
+selectFromRanges :: (Random a) => [(a,Int)] -> StdGen -> (a, StdGen)
+selectFromRanges ranges stdGen = undefined 
+    where
+        (randVal, stdGen') = random stdGen 
+        ranges' = foldl' genRange [] ranges 
+        genRange lst@((_,prev):rst) (val,cur) = (val, cur + prev) : lst
 
 getGoonType :: [Skill] -> GoonType
 getGoonType skills = linkedAttributes ! (fst maxAttribute) 
@@ -65,7 +64,7 @@ createMagicGoonStats b a r s c i l w ess m init ip cm astralInit astralIp = crea
         statTuples = createBaseStats b a r s c i l w ess init ip cm 
 
 createGoon :: String -> Int -> Stats -> [(String, Int)] -> [String] -> [String] -> [String] -> Maybe [Cyberware] -> Maybe [Program] -> Maybe [Spell] -> Goon
-createGoon name rank stats skills weapons armor equipment cyberware programs spells = Goon name rank stats skills' weapons' equipment' cyberware programs spells
+createGoon name rank stats skills weapons armor equipment cyberware programs spells = Goon name rank stats skills' weapons' equipment' cyberware programs spells Human
     where
         skills' = [createSkill x (SkillLevel y) | (x,y) <- skills]
         weapons' = [getWeapon x | x <- weapons]
@@ -93,7 +92,7 @@ rentacop = createGoon "Corporate Security Unit" 2 stats skills weapons armor equ
         equipment = ["CMT Clip"]
 
 rentaCopLt :: Goon
-rentaCopLt = Goon "CorpSec Lieutenant" 2 stats skills weapons equipment (Just cyberware) Nothing (Just spells)
+rentaCopLt = Goon "CorpSec Lieutenant" 2 stats skills weapons equipment (Just cyberware) Nothing (Just spells) Human
     where
         stats = createMagicGoonStats 3 3 3 3 3 4 3 4 6.0 3 7 1 10 8 3
         skills = createSkillList [("Assensing", 3), ("Astral Combat", 4), ("Conjuring", 3), ("Leadership", 2), ("Pistols", 2), ("Sorcery", 4)]

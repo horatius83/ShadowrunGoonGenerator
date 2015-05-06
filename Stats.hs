@@ -1,4 +1,14 @@
-module Stats(Stats, createStats, createStatsShort, shortStatToLong, statNames, getStat) where
+module Stats(
+    Stats, 
+    createStats, 
+    createStatsShort, 
+    shortStatToLong, 
+    statNames, 
+    getStat, 
+    BP(..),
+    MetaType(..),
+    getMetaTypeBpCost
+) where
 
 import Prelude hiding (lookup)
 import Data.List (intersperse, foldl')
@@ -7,6 +17,17 @@ import qualified Data.Set as S
 import Data.Maybe (fromJust)
 
 type Stats = Map String Double
+newtype BP = BP Int deriving (Show)
+
+data MetaType = Human | Ork | Dwarf | Elf | Troll deriving (Show)
+
+getMetaTypeBpCost :: MetaType -> BP 
+getMetaTypeBpCost metaType = BP $ case metaType of
+    Human -> 0
+    Ork -> 20
+    Dwarf -> 25
+    Elf -> 30
+    Troll -> 40
 
 getStat :: String -> Stats -> Double
 getStat stat stats = lookupOrError stat' stats 
