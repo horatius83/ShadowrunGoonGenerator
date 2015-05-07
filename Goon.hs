@@ -1,4 +1,4 @@
-module Goon (getGoon) where
+module Goon (getGoon, selectFromRanges, genRange) where
 
 import Cyberware (Cyberware(..), BodyPart(..), CyberLimbEnhancement(..))
 import Hacking (Program)
@@ -8,7 +8,7 @@ import Skills (Skill(..), createSkill, SkillLevel(..))
 import Spells (Spell, getSpell)
 import Armor (getArmor)
 import Equipment (Equipment(..), getEquipment, FocusType(..))
-import System.Random
+import System.Random (StdGen, random)
 import Prelude hiding (init, foldl)
 import Data.Map (empty, insertWith, insert, fromList, member, (!), foldlWithKey)
 import Data.List (foldl')
@@ -33,12 +33,20 @@ generateGoon goonType (BP bp) = undefined
 selectMetaType :: GoonType -> MetaType
 selectMetaType goonType = undefined
 
-selectFromRanges :: (Random a) => [(a,Int)] -> StdGen -> (a, StdGen)
-selectFromRanges ranges stdGen = undefined 
+selectFromRanges :: [(a,Int)] -> StdGen -> (a, StdGen)
+selectFromRanges ranges stdGen = (findVal ranges', stdGen')
     where
+        findVal ((a,x):(b,y):rst)
+            | y > randValInRange = a
+            | otherwise = findVal ((b,y):rst)
+        findVal ((x,_):[]) = x
+        randValInRange = randVal `mod` totalOfRanges 
+        totalOfRanges = foldl' (\x (_,y) -> x + y) 0 ranges
         (randVal, stdGen') = random stdGen 
         ranges' = foldl' genRange [] ranges 
-        genRange lst@((_,prev):rst) (val,cur) = (val, cur + prev) : lst
+        
+genRange lst@((_,prev):rst) (val,cur) = (val, cur + prev) : lst
+genRange [] (val, cur) = [(val, cur)]
 
 getGoonType :: [Skill] -> GoonType
 getGoonType skills = linkedAttributes ! (fst maxAttribute) 
