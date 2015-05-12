@@ -1,4 +1,4 @@
-module Goon (getGoon, selectFromRanges, genRange) where
+module Goon (getGoon, selectFromRanges) where
 
 import Cyberware (Cyberware(..), BodyPart(..), CyberLimbEnhancement(..))
 import Hacking (Program)
@@ -33,20 +33,20 @@ generateGoon goonType (BP bp) = undefined
 selectMetaType :: GoonType -> MetaType
 selectMetaType goonType = undefined
 
-selectFromRanges :: [(a,Int)] -> StdGen -> (a, StdGen)
+selectFromRanges :: [(a,Int)] -> StdGen -> (Maybe a, StdGen)
 selectFromRanges ranges stdGen = (findVal ranges', stdGen')
     where
         findVal ((a,x):(b,y):rst)
-            | y > randValInRange = a
+            | randValInRange > y = Just a
             | otherwise = findVal ((b,y):rst)
-        findVal ((x,_):[]) = x
+        findVal ((x,_):[]) = Just x
+        findVal _ = Nothing
         randValInRange = randVal `mod` totalOfRanges 
         totalOfRanges = foldl' (\x (_,y) -> x + y) 0 ranges
         (randVal, stdGen') = random stdGen 
         ranges' = foldl' genRange [] ranges 
-        
-genRange lst@((_,prev):rst) (val,cur) = (val, cur + prev) : lst
-genRange [] (val, cur) = [(val, cur)]
+        genRange lst@((_,prev):rst) (val,cur) = (val, cur + prev) : lst
+        genRange [] (val, cur) = [(val, cur)]
 
 getGoonType :: [Skill] -> GoonType
 getGoonType skills = linkedAttributes ! (fst maxAttribute) 
