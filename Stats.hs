@@ -19,7 +19,7 @@ import Data.Maybe (fromJust)
 type Stats = Map String Double
 newtype BP = BP Int deriving (Show)
 
-data MetaType = Human | Ork | Dwarf | Elf | Troll deriving (Show)
+data MetaType = Human | Ork | Dwarf | Elf | Troll deriving (Show, Enum)
 
 getMetaTypeBpCost :: MetaType -> BP 
 getMetaTypeBpCost metaType = BP $ case metaType of

@@ -1,4 +1,4 @@
-module Goon (getGoon, selectFromRanges) where
+module Goon (getGoon, selectFromRanges, selectMetaType) where
 
 import Cyberware (Cyberware(..), BodyPart(..), CyberLimbEnhancement(..))
 import Hacking (Program)
@@ -8,10 +8,11 @@ import Skills (Skill(..), createSkill, SkillLevel(..))
 import Spells (Spell, getSpell)
 import Armor (getArmor)
 import Equipment (Equipment(..), getEquipment, FocusType(..))
-import System.Random (StdGen, random)
+import System.Random (StdGen, random, mkStdGen)
 import Prelude hiding (init, foldl)
 import Data.Map (empty, insertWith, insert, fromList, member, (!), foldlWithKey)
 import Data.List (foldl')
+import Data.Maybe (fromJust)
 
 data Goon = Goon {
     goonName :: String,
@@ -30,9 +31,18 @@ data GoonType = Hacker | Magician | Berzerker | Gunman | Face | Pilot deriving (
 generateGoon :: GoonType -> BP -> Goon
 generateGoon goonType (BP bp) = undefined 
 
-selectMetaType :: GoonType -> MetaType
-selectMetaType goonType = undefined
-
+selectMetaType :: GoonType -> Int -> MetaType
+selectMetaType goonType seed = fromJust . fst $ selectFromRanges ranges (mkStdGen seed) 
+    where
+        ranges = getRange $ case goonType of
+            Hacker -> [30, 10, 25, 25, 10]
+            Magician -> [20, 10, 20, 40, 10]
+            Berzerker -> [10, 20, 10, 10, 50]
+            Gunman -> [20, 20, 20, 20, 20]
+            Face -> [35, 10, 10, 35, 10]
+            Pilot -> [20, 15, 30, 20, 15]
+        getRange probabilities = zip [Human .. Troll] probabilities 
+           
 selectFromRanges :: [(a,Int)] -> StdGen -> (Maybe a, StdGen)
 selectFromRanges ranges stdGen = (findVal ranges', stdGen')
     where
