@@ -8,11 +8,12 @@ import Skills (Skill(..), createSkill, SkillLevel(..))
 import Spells (Spell, getSpell)
 import Armor (getArmor)
 import Equipment (Equipment(..), getEquipment, FocusType(..))
-import System.Random (StdGen, random, mkStdGen)
+import System.Random (mkStdGen)
 import Prelude hiding (init, foldl)
 import Data.Map (empty, insertWith, insert, fromList, member, (!), foldlWithKey)
 import Data.List (foldl')
 import Data.Maybe (fromJust)
+import Utility (selectFromRanges)
 
 data Goon = Goon {
     goonName :: String,
@@ -43,20 +44,6 @@ selectMetaType goonType seed = fromJust . fst $ selectFromRanges ranges (mkStdGe
             Pilot -> [20, 15, 30, 20, 15]
         getRange probabilities = zip [Human .. Troll] probabilities 
            
-selectFromRanges :: [(a,Int)] -> StdGen -> (Maybe a, StdGen)
-selectFromRanges ranges stdGen = (findVal ranges', stdGen')
-    where
-        findVal ((a,x):(b,y):rst)
-            | randValInRange > y = Just a
-            | otherwise = findVal ((b,y):rst)
-        findVal ((x,_):[]) = Just x
-        findVal _ = Nothing
-        randValInRange = randVal `mod` totalOfRanges 
-        totalOfRanges = foldl' (\x (_,y) -> x + y) 0 ranges
-        (randVal, stdGen') = random stdGen 
-        ranges' = foldl' genRange [] ranges 
-        genRange lst@((_,prev):rst) (val,cur) = (val, cur + prev) : lst
-        genRange [] (val, cur) = [(val, cur)]
 
 getGoonType :: [Skill] -> GoonType
 getGoonType skills = linkedAttributes ! (fst maxAttribute) 
