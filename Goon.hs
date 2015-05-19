@@ -10,10 +10,9 @@ import Armor (getArmor)
 import Equipment (Equipment(..), getEquipment, FocusType(..))
 import System.Random (mkStdGen)
 import Prelude hiding (init, foldl)
-import Data.Map (empty, insertWith, insert, fromList, member, (!), foldlWithKey)
-import Data.List (foldl')
 import Data.Maybe (fromJust)
 import Utility (selectFromRanges)
+import Data.Hashable (hash)
 
 data Goon = Goon {
     goonName :: String,
@@ -29,8 +28,11 @@ data Goon = Goon {
 
 data GoonType = Hacker | Magician | Berzerker | Gunman | Face | Pilot deriving (Show)
 
-generateGoon :: GoonType -> BP -> Goon
-generateGoon goonType (BP bp) = undefined 
+generateGoon :: GoonType -> BP -> String -> Goon
+generateGoon goonType (BP bp) name = undefined 
+    where
+        metaType = selectMetaType goonType seed
+        seed = fromIntegral $ hash name
 
 selectMetaType :: GoonType -> Int -> MetaType
 selectMetaType goonType seed = fromJust . fst $ selectFromRanges ranges (mkStdGen seed) 
@@ -44,21 +46,6 @@ selectMetaType goonType seed = fromJust . fst $ selectFromRanges ranges (mkStdGe
             Pilot -> [20, 15, 30, 20, 15]
         getRange probabilities = zip [Human .. Troll] probabilities 
            
-
-getGoonType :: [Skill] -> GoonType
-getGoonType skills = linkedAttributes ! (fst maxAttribute) 
-    where
-        maxAttribute = foldlWithKey (\a@(attrib, level) attrib' level' -> if level' > level then (attrib', level') else a) ("a", 0) skillsCount 
-        linkedAttributes =  fromList [("b", Berzerker), ("a", Gunman), ("r", Pilot), ("s", Berzerker), ("c", Face), ("i", Hacker), ("w", Magician), ("l", Hacker), ("m", Magician), ("res", Hacker)]
-        skillsCount = foldl' countGoonType empty $ filter isLinkedAttribute skills
-        isLinkedAttribute (Skill _ _ stat _ _) = stat `member` linkedAttributes
-        isLinkedAttribute (SkillGroup _ _ skillGroupSkills) = all isLinkedAttribute skillGroupSkills
-        countGoonType skillMap (Skill _ (SkillLevel level) linkedStat _ _)
-            | linkedStat `member` skillMap = insertWith (+) linkedStat level skillMap
-            | otherwise = insert linkedStat level skillMap 
-        countGoonType skillMap (SkillGroup _ _ groupSkills) = foldl' countGoonType skillMap groupSkills 
-        countGoonType skillMap _ = skillMap 
-
 createGoonStats :: Int -> Int -> Int -> Int -> Int -> Int -> Int -> Int -> Int -> Stats
 createGoonStats b a r s c i l w init = createStatsShort $ createBaseStats b a r s c i l w 1 init 1 10 
 
