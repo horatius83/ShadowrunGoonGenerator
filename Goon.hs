@@ -45,6 +45,9 @@ selectMetaType goonType seed = fromJust . fst $ selectFromRanges ranges (mkStdGe
             Face -> [35, 10, 10, 35, 10]
             Pilot -> [20, 15, 30, 20, 15]
         getRange probabilities = zip [Human .. Troll] probabilities 
+
+addStats :: String -> BP -> GoonType -> Stats -> Stats
+addStats name bp goonType goonStats = undefined
            
 createGoonStats :: Int -> Int -> Int -> Int -> Int -> Int -> Int -> Int -> Int -> Stats
 createGoonStats b a r s c i l w init = createStatsShort $ createBaseStats b a r s c i l w 1 init 1 10 
