@@ -29,7 +29,10 @@ getMetaTypeBpCost metaType = BP $ case metaType of
     Elf -> 30
     Troll -> 40
 
-data StatLimit = StatLimit Double Double Double deriving (Show)
+type StatMin = Double
+type StatNaturalMax = Double
+type StatMax = Double
+data StatLimit = StatLimit StatMin StatNaturalMax StatMax deriving (Show)
 
 getStatLimits :: MetaType -> M.Map String StatLimit
 getStatLimits metaType = M.fromList $ zip stats $ map toStatLimit $ case metaType of
@@ -44,12 +47,25 @@ getStatLimits metaType = M.fromList $ zip stats $ map toStatLimit $ case metaTyp
         de = (1, 6, 6)
         toStatLimit (minValue, maxValue, maxAugValue) = StatLimit minValue maxValue maxAugValue
 
+addToStats :: BP -> String -> Stats -> MetaType -> (Stats, BP)
+addToStats (BP bp) statName stats metaType = (stats', BP bp')
+    where
+        (StatLimit _ statMax _) = fromJust $ M.lookup statName $ getStatLimits metaType
+        currentStat = fromJust $ M.lookup statName stats
+        bpCost 
+            | currentStat == statMax - 1 = 25
+            | currentStat < statMax = 10
+            | otherwise = 0
+        bp' = bp - bpCost
+        stats' = if currentStat <= statMax && bp' > 0
+                 then M.insert statName (currentStat + 1) stats 
+                 else stats
+
 getBaseStatsForMetaType :: MetaType -> Stats
 getBaseStatsForMetaType metaType = M.map getMin $ statLimits
     where
         getMin (StatLimit minValue _ _) = minValue
         statLimits = getStatLimits metaType
-
 
 getStat :: String -> Stats -> Double
 getStat stat stats = lookupOrError stat' stats 

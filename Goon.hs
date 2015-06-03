@@ -46,8 +46,18 @@ selectMetaType goonType seed = fromJust . fst $ selectFromRanges ranges (mkStdGe
             Pilot -> [20, 15, 30, 20, 15]
         getRange probabilities = zip [Human .. Troll] probabilities 
 
-addStats :: String -> BP -> GoonType -> Stats -> Stats
-addStats name bp goonType goonStats = undefined
+addStats :: BP -> GoonType -> MetaType -> Stats -> (Stats, BP)
+addStats bp goonType metaType goonStats = undefined
+    where
+        ranges = zip statNames $ case goonType of
+                        -- b   a   r   s   c   i   l   w  m  r
+            Hacker ->    [10, 20, 10, 10, 10, 10, 40, 10, 0, 30]
+            Magician ->  [10, 10, 10, 10, 10, 10, 20, 10, 40, 0]
+            Berzerker -> [20, 10, 10, 40, 10, 10, 10, 10, 0, 0]
+            Gunman ->    [10, 40, 10, 10, 10, 10, 10, 10, 0, 0]
+            Face ->      [10, 10, 10, 10, 40, 10, 10, 10, 0, 0]
+            Pilot ->     [10, 10, 40, 10, 10, 10, 10, 10, 0, 0]
+        statNames = ["body", "agility", "reaction", "strength", "charisma", "intuition", "logic", "willpower", "magic", "resonance"]
            
 createGoonStats :: Int -> Int -> Int -> Int -> Int -> Int -> Int -> Int -> Int -> Stats
 createGoonStats b a r s c i l w init = createStatsShort $ createBaseStats b a r s c i l w 1 init 1 10 
