@@ -2,7 +2,7 @@ module Goon (getGoon, selectFromRanges, selectMetaType) where
 
 import Cyberware (Cyberware(..), BodyPart(..), CyberLimbEnhancement(..))
 import Hacking (Program)
-import Stats (Stats, createStatsShort, BP(..), MetaType(..))
+import Stats (Stats, createStatsShort, BP(..), MetaType(..), isStatMaxed)
 import Weapons (Weapon, getWeapon)
 import Skills (Skill(..), createSkill, SkillLevel(..))
 import Spells (Spell, getSpell)
@@ -13,6 +13,7 @@ import Prelude hiding (init, foldl)
 import Data.Maybe (fromJust)
 import Utility (selectFromRanges)
 import Data.Hashable (hash)
+import qualified Data.Map as M
 
 data Goon = Goon {
     goonName :: String,
@@ -46,9 +47,14 @@ selectMetaType goonType seed = fromJust . fst $ selectFromRanges ranges (mkStdGe
             Pilot -> [20, 15, 30, 20, 15]
         getRange probabilities = zip [Human .. Troll] probabilities 
 
-addStats :: BP -> GoonType -> MetaType -> Stats -> (Stats, BP)
-addStats bp goonType metaType goonStats = undefined
+addStats :: BP -> GoonType -> MetaType -> Stats -> Int -> (Stats, BP)
+addStats bp goonType metaType goonStats seed = undefined
     where
+        stat = selectFromRanges filteredRanges $ mkStdGen seed
+        -- Get the stats that are maxed out, and filter those out
+        filteredRanges = filter (\(stat, _) -> not $ stat `M.member` statsThatAreMaxed) ranges 
+        -- If one stat is maxed then we cannot max out any other stats, so remove any that are one below max as well
+        statsThatAreMaxed = M.filterWithKey (\k _ -> isStatMaxed k metaType goonStats) goonStats
         ranges = zip statNames $ case goonType of
                         -- b   a   r   s   c   i   l   w  m  r
             Hacker ->    [10, 20, 10, 10, 10, 10, 40, 10, 0, 30]

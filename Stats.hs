@@ -3,10 +3,12 @@ module Stats(
     createStats, 
     createStatsShort, 
     shortStatToLong, 
+    getBaseStatsForMetaType,
     statNames, 
     getStat, 
     BP(..),
     MetaType(..),
+    isStatMaxed,
     getMetaTypeBpCost
 ) where
 
@@ -35,6 +37,15 @@ type StatNaturalMax = Double
 type StatMax = Double
 data StatLimit = StatLimit StatMin StatNaturalMax StatMax deriving (Show)
 
+getStatMin :: StatLimit -> StatMin
+getStatMin (StatLimit statMin _ _) = statMin
+
+getStatNaturalMax :: StatLimit -> StatNaturalMax
+getStatNaturalMax (StatLimit _ statNatMax _) = statNatMax
+
+getStatMax :: StatLimit -> StatMax
+getStatMax (StatLimit _ _ statMax) = statMax
+
 getStatLimits :: MetaType -> M.Map String StatLimit
 getStatLimits metaType = M.fromList $ zip stats $ map toStatLimit $ case metaType of
     Human -> (take 8 $ repeat d) ++ [(2,12,18), (1,7,7)]
@@ -47,6 +58,13 @@ getStatLimits metaType = M.fromList $ zip stats $ map toStatLimit $ case metaTyp
         d = (1,6,9)
         de = (1, 6, 6)
         toStatLimit (minValue, maxValue, maxAugValue) = StatLimit minValue maxValue maxAugValue
+
+isStatMaxed :: String -> MetaType -> Stats -> Bool
+isStatMaxed statName metaType stats = fromMaybe False $ isMaxed <$> currentStat <*> maybeStatMax
+    where
+        isMaxed curStat maxStat = curStat == maxStat
+        maybeStatMax = fmap getStatNaturalMax $ M.lookup statName $ getStatLimits metaType
+        currentStat = M.lookup statName stats
 
 bpCostToIncreaseStat :: String -> Stats -> MetaType -> Maybe BP
 bpCostToIncreaseStat statName stats metaType = bpCost <$> statLimit <*> currentStat
