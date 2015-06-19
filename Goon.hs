@@ -2,7 +2,7 @@ module Goon (getGoon, selectFromRanges, selectMetaType) where
 
 import Cyberware (Cyberware(..), BodyPart(..), CyberLimbEnhancement(..))
 import Hacking (Program)
-import Stats (Stats, createStatsShort, BP(..), MetaType(..), isStatMaxed)
+import Stats (Stats, createStatsShort, BP(..), MetaType(..), isStatMaxed, addToStats)
 import Weapons (Weapon, getWeapon)
 import Skills (Skill(..), createSkill, SkillLevel(..))
 import Spells (Spell, getSpell)
@@ -16,27 +16,27 @@ import Data.Hashable (hash)
 import qualified Data.Map as M
 
 data Goon = Goon {
-    goonName :: String,
-    goonRating :: Int,
-    goonStats :: Stats,
-    goonSkills :: [Skill],
-    goonWeapons :: [Weapon],
-    goonEquipment :: [Equipment],
-    goonCyberware :: Maybe [Cyberware],
-    goonPrograms :: Maybe [Program],
-    goonSpells :: Maybe [Spell],
-    goonMetaType :: MetaType} deriving (Show)
+    name :: String,
+    rating :: Int,
+    stats :: Stats,
+    skills :: [Skill],
+    weapons :: [Weapon],
+    equipment :: [Equipment],
+    cyberware :: Maybe [Cyberware],
+    programs :: Maybe [Program],
+    spells :: Maybe [Spell],
+    metatype :: MetaType} deriving (Show)
 
 data GoonType = Hacker | Magician | Berzerker | Gunman | Face | Pilot deriving (Show)
 
 generateGoon :: GoonType -> BP -> String -> Goon
-generateGoon goonType (BP bp) name = undefined 
+generateGoon goonType (BP bp) goonName = undefined 
     where
         metaType = selectMetaType goonType seed
-        seed = fromIntegral $ hash name
+        seed = fromIntegral $ hash goonName
 
 selectMetaType :: GoonType -> Int -> MetaType
-selectMetaType goonType seed = fromJust . fst $ selectFromRanges ranges (mkStdGen seed) 
+selectMetaType goonType seed = fromJust . fst $ selectFromRanges ranges (mkStdGen seed)  
     where
         ranges = getRange $ case goonType of
             Hacker -> [30, 10, 25, 25, 10]
@@ -48,9 +48,11 @@ selectMetaType goonType seed = fromJust . fst $ selectFromRanges ranges (mkStdGe
         getRange probabilities = zip [Human .. Troll] probabilities 
 
 addStats :: BP -> GoonType -> MetaType -> Stats -> Int -> (Stats, BP)
-addStats bp goonType metaType goonStats seed = undefined
+addStats bp goonType metaType goonStats seed = getStatsAndBpFromStatName maybeStatName
     where
-        stat = selectFromRanges filteredRanges $ mkStdGen seed
+        getStatsAndBpFromStatName (Just goonName) = addToStats bp goonName goonStats metaType
+        getStatsAndBpFromStatName (Nothing) = (goonStats, bp) -- there should be a better way to handle this, when could this happen? Is this an exceptional case?
+        (maybeStatName, _) = selectFromRanges filteredRanges $ mkStdGen seed
         -- Get the stats that are maxed out, and filter those out
         filteredRanges = filter (\(stat, _) -> not $ stat `M.member` statsThatAreMaxed) ranges 
         -- If one stat is maxed then we cannot max out any other stats, so remove any that are one below max as well
@@ -75,14 +77,14 @@ createMagicGoonStats b a r s c i l w ess m init ip cm astralInit astralIp = crea
         statTuples = createBaseStats b a r s c i l w ess init ip cm 
 
 createGoon :: String -> Int -> Stats -> [(String, Int)] -> [String] -> [String] -> [String] -> Maybe [Cyberware] -> Maybe [Program] -> Maybe [Spell] -> Goon
-createGoon name rank stats skills weapons armor equipment cyberware programs spells = Goon name rank stats skills' weapons' equipment' cyberware programs spells Human
+createGoon goonName rank goonStats goonSkills goonWeapons armor goonEquipment goonCyberware goonPrograms goonSpells = Goon goonName rank goonStats skills' weapons' equipment' goonCyberware goonPrograms goonSpells Human
     where
-        skills' = [createSkill x (SkillLevel y) | (x,y) <- skills]
-        weapons' = [getWeapon x | x <- weapons]
-        equipment' = [getArmor x | x <- armor] ++ [getEquipment x | x <- equipment]
+        skills' = [createSkill x (SkillLevel y) | (x,y) <- goonSkills]
+        weapons' = [getWeapon x | x <- goonWeapons]
+        equipment' = [getArmor x | x <- armor] ++ [getEquipment x | x <- goonEquipment]
 
 createSkillList :: [(String, Int)] -> [Skill]
-createSkillList skills = [createSkill x (SkillLevel y) | (x,y) <- skills]
+createSkillList goonSkills = [createSkill x (SkillLevel y) | (x,y) <- goonSkills]
 
 createBaseStats :: Int -> Int -> Int -> Int -> Int -> Int -> Int -> Int -> Double -> Int -> Int -> Int -> [(String,Double)]
 createBaseStats b a r s c i l w ess init ip cm = statsTuples ++ [("ess", ess)] 
@@ -91,29 +93,23 @@ createBaseStats b a r s c i l w ess init ip cm = statsTuples ++ [("ess", ess)]
         statsList = map fromIntegral [b,a,r,s,c,i,l,w,1,init,ip,cm] 
 
 getGoon :: String -> Goon
-getGoon name = undefined
+getGoon goonName = undefined
 
 rentacop :: Goon
-rentacop = createGoon "Corporate Security Unit" 2 stats skills weapons armor equipment Nothing Nothing Nothing 
+rentacop = createGoon "Corporate Security Unit" 2 goonStats goonSkills goonWeapons armor goonEquipment Nothing Nothing Nothing 
     where
-        stats = createGoonStats 3 3 4 3 3 3 2 3 7 
-        skills = [("Athletics", 3), ("Automatics", 3), ("Dodge", 3), ("Pistols", 3), ("Close Combat", 3)]
-        weapons = ["Fischetti Security 600 Light Pistol", "HK-227X", "Stun Baton"]
+        goonStats = createGoonStats 3 3 4 3 3 3 2 3 7 
+        goonSkills = [("Athletics", 3), ("Automatics", 3), ("Dodge", 3), ("Pistols", 3), ("Close Combat", 3)]
+        goonWeapons = ["Fischetti Security 600 Light Pistol", "HK-227X", "Stun Baton"]
         armor = ["Armor Vest"]
-        equipment = ["CMT Clip"]
+        goonEquipment = ["CMT Clip"]
 
 rentaCopLt :: Goon
-rentaCopLt = Goon "CorpSec Lieutenant" 2 stats skills weapons equipment (Just cyberware) Nothing (Just spells) Human
+rentaCopLt = Goon "CorpSec Lieutenant" 2 goonStats goonSkills goonWeapons goonEquipment (Just goonCyberware) Nothing (Just goonSpells) Human
     where
-        stats = createMagicGoonStats 3 3 3 3 3 4 3 4 6.0 3 7 1 10 8 3
-        skills = createSkillList [("Assensing", 3), ("Astral Combat", 4), ("Conjuring", 3), ("Leadership", 2), ("Pistols", 2), ("Sorcery", 4)]
-        weapons = [getWeapon "Fischetti Security 600 Light Pistol"]
-        equipment = [getArmor "Armor Vest", getEquipment "Renraku Sensei", Focus Spellcasting 2] 
-        cyberware = [CyberLimb "Full Arm" Arm (Just $ Body 1) 1.0 15 []]
-        spells = map getSpell ["Detect Life", "Light", "Physical Barrier", "Powerbolt", "Silence", "Stunball"]        
-
-printGoon :: Goon -> IO ()
-printGoon goon = do
-    putStrLn $ "Name: " ++ (goonName goon)
-    putStrLn "Stats:"
-     
+        goonStats = createMagicGoonStats 3 3 3 3 3 4 3 4 6.0 3 7 1 10 8 3
+        goonSkills = createSkillList [("Assensing", 3), ("Astral Combat", 4), ("Conjuring", 3), ("Leadership", 2), ("Pistols", 2), ("Sorcery", 4)]
+        goonWeapons = [getWeapon "Fischetti Security 600 Light Pistol"]
+        goonEquipment = [getArmor "Armor Vest", getEquipment "Renraku Sensei", Focus Spellcasting 2] 
+        goonCyberware = [CyberLimb "Full Arm" Arm (Just $ Body 1) 1.0 15 []]
+        goonSpells = map getSpell ["Detect Life", "Light", "Physical Barrier", "Powerbolt", "Silence", "Stunball"]        

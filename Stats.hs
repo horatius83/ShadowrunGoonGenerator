@@ -6,6 +6,7 @@ module Stats(
     getBaseStatsForMetaType,
     statNames, 
     getStat, 
+    addToStats,
     BP(..),
     MetaType(..),
     isStatMaxed,
