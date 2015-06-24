@@ -2,7 +2,7 @@ module Goon (getGoon, selectFromRanges, selectMetaType) where
 
 import Cyberware (Cyberware(..), BodyPart(..), CyberLimbEnhancement(..))
 import Hacking (Program)
-import Stats (Stats, createStatsShort, BP(..), MetaType(..), isStatMaxed, addToStats)
+import Stats (Stats, createStatsShort, BP(..), MetaType(..), getStatsThatAreMaxed, addToStats)
 import Weapons (Weapon, getWeapon)
 import Skills (Skill(..), createSkill, SkillLevel(..))
 import Spells (Spell, getSpell)
@@ -56,15 +56,7 @@ addStats bp goonType metaType goonStats seed = getStatsAndBpFromStatName maybeSt
         -- Get the stats that are maxed out, and filter those out
         filteredRanges = filter (\(stat, _) -> not $ stat `M.member` statsThatAreMaxed) ranges 
         -- If one stat is maxed then we cannot max out any other stats, so remove any that are one below max as well
-        statsThatAreMaxed 
-            | not . M.null $ maxedGoonStats = M.union maxedGoonStats oneLessThanMaxed
-            | otherwise = M.empty
-            where
-                maxedGoonStats = maxed goonStats
-                maxed gStats = M.filterWithKey (\k _ -> isStatMaxed k metaType gStats) goonStats
-                oneLessThanMaxed = maxed statsPlusOne 
-                statsPlusOne = M.map (+ 1.0) goonStats
-                
+        statsThatAreMaxed = getStatsThatAreMaxed goonStats metaType
         ranges = zip statNames $ case goonType of
                         -- b   a   r   s   c   i   l   w  m  r
             Hacker ->    [10, 20, 10, 10, 10, 10, 40, 10, 0, 30]

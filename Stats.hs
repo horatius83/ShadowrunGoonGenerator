@@ -10,7 +10,8 @@ module Stats(
     BP(..),
     MetaType(..),
     isStatMaxed,
-    getMetaTypeBpCost
+    getMetaTypeBpCost,
+    getStatsThatAreMaxed
 ) where
 
 import Prelude hiding (lookup)
@@ -59,6 +60,18 @@ getStatLimits metaType = M.fromList $ zip stats $ map toStatLimit $ case metaTyp
         d = (1,6,9)
         de = (1, 6, 6)
         toStatLimit (minValue, maxValue, maxAugValue) = StatLimit minValue maxValue maxAugValue
+
+-- If one stat is maxed, then the maximum value of the other stats will be
+-- one less than the maximum
+getStatsThatAreMaxed :: Stats -> MetaType -> Stats
+getStatsThatAreMaxed stats metaType 
+    | not . M.null $ maxedGoonStats = M.union maxedGoonStats oneLessThanMaxed
+    | otherwise = M.empty
+    where
+        maxedGoonStats = maxed stats
+        maxed goonStats = M.filterWithKey (\k _ -> isStatMaxed k metaType goonStats) goonStats
+        oneLessThanMaxed = maxed statsPlusOne
+        statsPlusOne = M.map (+ 1.0) stats        
 
 isStatMaxed :: String -> MetaType -> Stats -> Bool
 isStatMaxed statName metaType stats = fromMaybe False $ isMaxed <$> currentStat <*> maybeStatMax
