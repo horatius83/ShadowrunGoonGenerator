@@ -22,7 +22,13 @@ import Data.Maybe (fromJust, fromMaybe)
 import Control.Applicative
 
 type Stats = M.Map String Double
-newtype BP = BP Int deriving (Show)
+newtype BP = BP Int deriving (Show, Eq, Ord)
+infixl 6 <+>
+(<+>) :: BP -> BP -> BP
+BP x <+> BP y = BP (x + y)
+infixl 6 <->
+(<->) :: BP -> BP -> BP
+BP x <-> BP y = BP (x - y)
 
 data MetaType = Human | Ork | Dwarf | Elf | Troll deriving (Show, Enum)
 
