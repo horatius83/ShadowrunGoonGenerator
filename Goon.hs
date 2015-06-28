@@ -13,6 +13,7 @@ import Prelude hiding (init, foldl)
 import Data.Maybe (fromJust)
 import Utility (selectFromRanges)
 import Data.Hashable (hash)
+import Qualities (Quality(..))
 import qualified Data.Map as M
 
 data Goon = Goon {
@@ -30,11 +31,17 @@ data Goon = Goon {
 data GoonType = Hacker | Magician | Berzerker | Gunman | Face | Pilot deriving (Show)
 
 generateGoon :: GoonType -> BP -> String -> Goon
-generateGoon goonType (BP bp) goonName = undefined 
+generateGoon goonType bp goonName = undefined 
     where
-        metaType = selectMetaType goonType seed
+        -- generate metatype
         seed = fromIntegral $ hash goonName
+        metaType = selectMetaType goonType seed
+        -- generate qualities
 
+        -- assign BPs to attributes
+        -- assign BPs to skills
+        -- assign BPs to resources, gear etc.
+        
 selectMetaType :: GoonType -> Int -> MetaType
 selectMetaType goonType seed = fromJust . fst $ selectFromRanges ranges (mkStdGen seed)  
     where
@@ -67,6 +74,9 @@ addStats bp goonType metaType goonStats seed = getStatsAndBpFromStatName maybeSt
             Pilot ->     [10, 10, 40, 10, 10, 10, 10, 10, 0, 0]
         statNames = ["body", "agility", "reaction", "strength", "charisma", "intuition", "logic", "willpower", "magic", "resonance"]
            
+getQualitiesForMetaType :: MetaType -> [Quality]
+getQualitiesForMetaType metaType = undefined
+
 createGoonStats :: Int -> Int -> Int -> Int -> Int -> Int -> Int -> Int -> Int -> Stats
 createGoonStats b a r s c i l w init = createStatsShort $ createBaseStats b a r s c i l w 1 init 1 10 
 
