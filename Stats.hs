@@ -18,17 +18,14 @@ import Prelude hiding (lookup)
 import Data.List (intersperse, foldl')
 import qualified Data.Map as M 
 import qualified Data.Set as S
-import Data.Maybe (fromJust, fromMaybe)
+import Data.Maybe (isJust, fromJust, fromMaybe)
 import Control.Applicative
 
 type Stats = M.Map String Double
 newtype BP = BP Int deriving (Show, Eq, Ord)
-infixl 6 <+>
-(<+>) :: BP -> BP -> BP
-BP x <+> BP y = BP (x + y)
-infixl 6 <->
-(<->) :: BP -> BP -> BP
-BP x <-> BP y = BP (x - y)
+
+subBP :: BP -> BP -> BP
+subBP (BP x) (BP y) = BP (x - y)
 
 data MetaType = Human | Ork | Dwarf | Elf | Troll deriving (Show, Enum)
 
@@ -45,14 +42,8 @@ type StatNaturalMax = Double
 type StatMax = Double
 data StatLimit = StatLimit StatMin StatNaturalMax StatMax deriving (Show)
 
-getStatMin :: StatLimit -> StatMin
-getStatMin (StatLimit statMin _ _) = statMin
-
 getStatNaturalMax :: StatLimit -> StatNaturalMax
 getStatNaturalMax (StatLimit _ statNatMax _) = statNatMax
-
-getStatMax :: StatLimit -> StatMax
-getStatMax (StatLimit _ _ statMax) = statMax
 
 getStatLimits :: MetaType -> M.Map String StatLimit
 getStatLimits metaType = M.fromList $ zip stats $ map toStatLimit $ case metaType of
@@ -98,17 +89,16 @@ bpCostToIncreaseStat statName stats metaType = bpCost <$> statLimit <*> currentS
             | curStat < maxStat = BP 10
             | otherwise = BP 0
 
-addToStats :: BP -> String -> Stats -> MetaType -> (Stats, BP)
-addToStats bp@(BP bpValue) statName stats metaType = statsTuple
+addToStats :: BP -> String -> Stats -> MetaType -> Maybe (Stats, BP)
+addToStats bp statName stats metaType
+    | hasEnoughBp && isJust stats' && isJust bp' = Just (fromJust stats', fromJust bp')
+    | otherwise = Nothing
     where
-        statsTuple = fromMaybe (stats, bp) $ getStats <$> maybeBpCost <*> maybeCurrentStat
-        maybeBpCost = bpCostToIncreaseStat statName stats metaType         
-        (BP bpCost) = fromMaybe (BP 0) maybeBpCost
+        bpCost = bpCostToIncreaseStat statName stats metaType
+        hasEnoughBp = isJust $ (<=) <$> bpCost <*> Just bp
+        bp' = subBP <$> Just bp <*> bpCost
         maybeCurrentStat = M.lookup statName stats
-        maybeStats = getStats <$> maybeBpCost <*> maybeCurrentStat
-        getStats (BP bpCostOfStat) currentStat
-            | bpCost <= bpValue = (M.insert statName (currentStat + 1) stats, BP (bpValue - bpCostOfStat))
-            | otherwise = (stats, bp)
+        stats' = (\currentStat -> M.insert statName (currentStat + 1) stats) <$> maybeCurrentStat
 
 getBaseStatsForMetaType :: MetaType -> Stats
 getBaseStatsForMetaType metaType = M.map getMin $ statLimits

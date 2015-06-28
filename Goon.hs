@@ -47,11 +47,11 @@ selectMetaType goonType seed = fromJust . fst $ selectFromRanges ranges (mkStdGe
             Pilot -> [20, 15, 30, 20, 15]
         getRange probabilities = zip [Human .. Troll] probabilities 
 
-addStats :: BP -> GoonType -> MetaType -> Stats -> Int -> (Stats, BP)
+addStats :: BP -> GoonType -> MetaType -> Stats -> Int -> Maybe (Stats, BP)
 addStats bp goonType metaType goonStats seed = getStatsAndBpFromStatName maybeStatName
     where
         getStatsAndBpFromStatName (Just goonName) = addToStats bp goonName goonStats metaType
-        getStatsAndBpFromStatName (Nothing) = (goonStats, bp) -- there should be a better way to handle this, when could this happen? Is this an exceptional case?
+        getStatsAndBpFromStatName (Nothing) = Nothing
         (maybeStatName, _) = selectFromRanges filteredRanges $ mkStdGen seed
         -- Get the stats that are maxed out, and filter those out
         filteredRanges = filter (\(stat, _) -> not $ stat `M.member` statsThatAreMaxed) ranges 
