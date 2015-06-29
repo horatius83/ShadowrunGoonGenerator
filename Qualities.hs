@@ -55,4 +55,25 @@ qualityDb = fromList [(qualityName q, q) | q <- [
     quality "Toughness" 10 "Gain +1 dice pool modifier to Body when making Damage Resistance Tests",
     quality "Will To Live 1" 5 "The character gains 1 additional damage overflow box. Does not raise the threshold at which the character becomes incompacitated, or wound modifiers from damage taken.",
     quality "Will To Live 2" 10 "The character gains 2 additional damage overflow boxes. Does not raise the threshold at which the character becomes incompacitated, or wound modifiers from damage taken.",
-    quality "Will To Live 3" 15 "The character gains 3 additional damage overflow boxes. Does not raise the threshold at which the character becomes incompacitated, or wound modifiers from damage taken."]]
+    quality "Will To Live 3" 15 "The character gains 3 additional damage overflow boxes. Does not raise the threshold at which the character becomes incompacitated, or wound modifiers from damage taken.",
+    -- Negative Qualities
+    quality "Mild Addiction" (-5) "Experience a craving about once or twice a week. Can ignore the craving for -2 dice modifier to Willpower / Body to resist",
+    quality "Moderate Addiction" (-10) "Experience a craving at least once a day. Can ignore the craving for -4 dice modifier to Willpower / Body to resist",
+    quality "Severe Addiction" (-20) "Experience constant cravings, at least twice a day. Can ignore the cravig for -6 dice modifier to Willpower / Body to resist",
+    quality "Burnout" (-30) "Same as Severe addiction, but you take -1 to essense, and will continue losing essense until you die or clean up",
+    -- Allergies are a separate list
+    Quality "Astral Beacon" (BP (-5)) "All astral signatures last twice as long, and others assensing the signature get +2 dice pool modifier" Nothing (Just ["Adept", "Magician", "Mystic Adept"]),
+    quality "Bad Luck" (-20) "Whenever the character spends edge, roll 1d6. On a 1 the result is the opposite of what was intended",
+    quality "Coderblock" (-5) "Receive -2 on any attempt at a specific matrix action. Only applies to matrix actions with an associated test",
+    quality "Combat Paralysis" (-20) "On the first initiative pass only rolls half initiative. Receives -3 pool modifier to surprise tests, -1 modifier to composure tests in combat situations",
+    quality "Elf Poser" (-5) "A human that dresses and acts like an elf. Being outed may result in hostility by Elves and Humans",
+    quality "Gremlins 1" (-5) "Reduces the number of dice needed to glitch by 1 when using modern technology",
+    quality "Gremlins 2" (-10) "Reduces the number of dice needed to glitch by 2 when using modern technology",
+    quality "Gremlins 3" (-15) "Reduces the number of dice needed to glitch by 3 when using modern technology",
+    quality "Gremlins 4" (-20) "Reduces the number of dice needed to glitch by 4 when using modern technology",
+    quality "Incompetent" (-5) "Character is incompetent at a particular active skill, and will be rated as unaware in that skill. May also have to roll for tasks that competent characters wouldn't need to",
+    quality "Infirm" (-20) "The cost of learning or improving Physical skill is twice normal including during character creation. Will be considered unaware for any physical tests.",
+    quality "Low Pain Tolerance" (-10) "Incur -1 wound modifier for every 2 boxes of damage rather than 3",
+    quality "Ork Poser" (-5) "A human or elf that dresses and acts like an Ork. May receive hostility from Orks if discovered, also Elves and Humans as a race traitor.",
+    quality "Pacifist 1" (-5) "Character avoids confrontation and will only kill in self-defence.",
+    quality "Pacifist 2" (-10) "Character can not kill, and if they somehow do they will be overcome with depression for several weeks"]]
