@@ -1,7 +1,9 @@
 module Qualities where
 
-import Data.Map (Map, fromList)
-import Stats (BP(..))
+import Data.Map (Map, fromList, lookup)
+import Stats (BP(..), addBP, MetaType(..))
+import Control.Applicative ((<$>), (<*>))
+import Prelude hiding (lookup)
 
 data Quality = Quality { 
     qualityName :: String,
@@ -10,6 +12,17 @@ data Quality = Quality {
     qualityIncompatible :: Maybe [String],
     qualityDependency :: Maybe [String]} deriving (Show)
 
+getQualityCost :: String -> [Quality] -> Maybe BP
+getQualityCost nameOfQuality qualities
+    | "Technomancer" `elem` map qualityName qualities && nameOfQuality == "Scorched" = addBP <$> bpCost <*> bpCost
+    | otherwise = bpCost
+    where
+        bpCost = qualityBp <$> maybeQuality
+        maybeQuality = lookup nameOfQuality qualityDb  
+
+getAvailableQualities :: [Quality] -> MetaType -> Map String Quality
+getAvailableQualities currentQualities metaType = undefined
+    
 quality :: String -> Int -> String -> Quality
 quality name bp description = Quality name (BP bp) description Nothing Nothing
 

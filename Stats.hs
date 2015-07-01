@@ -8,6 +8,7 @@ module Stats(
     getStat, 
     addToStats,
     BP(..),
+    addBP,
     MetaType(..),
     isStatMaxed,
     getMetaTypeBpCost,
@@ -26,6 +27,9 @@ newtype BP = BP Int deriving (Show, Eq, Ord)
 
 subBP :: BP -> BP -> BP
 subBP (BP x) (BP y) = BP (x - y)
+
+addBP :: BP -> BP -> BP
+addBP (BP x) (BP y) = BP (x + y)
 
 data MetaType = Human | Ork | Dwarf | Elf | Troll deriving (Show, Enum)
 
