@@ -14,9 +14,11 @@ data Quality = Quality {
 
 getQualityCost :: String -> [Quality] -> Maybe BP
 getQualityCost nameOfQuality qualities
-    | "Technomancer" `elem` map qualityName qualities && nameOfQuality == "Scorched" = addBP <$> bpCost <*> bpCost
+    | isTechnomancer && (nameOfQuality == "Scorched" || nameOfQuality == "Sensitive Neural Structure") = addBP <$> bpCost <*> bpCost
+    | isTechnomancer && nameOfQuality == "Simsense Vertigo" = Just $ BP (-15)
     | otherwise = bpCost
     where
+        isTechnomancer = "Technomancer" `elem` map qualityName qualities 
         bpCost = qualityBp <$> maybeQuality
         maybeQuality = lookup nameOfQuality qualityDb  
 
@@ -89,4 +91,14 @@ qualityDb = fromList [(qualityName q, q) | q <- [
     quality "Low Pain Tolerance" (-10) "Incur -1 wound modifier for every 2 boxes of damage rather than 3",
     quality "Ork Poser" (-5) "A human or elf that dresses and acts like an Ork. May receive hostility from Orks if discovered, also Elves and Humans as a race traitor.",
     quality "Pacifist 1" (-5) "Character avoids confrontation and will only kill in self-defence.",
-    quality "Pacifist 2" (-10) "Character can not kill, and if they somehow do they will be overcome with depression for several weeks"]]
+    quality "Pacifist 2" (-10) "Character can not kill, and if they somehow do they will be overcome with depression for several weeks",
+    quality "Scorched" (-5) "Character receives a -2 dice pool modifier to any Willpower-related tests madw when facing Black IC or BTLs.",
+    quality "Sensitive Neural Structure" (-5) "Character is vulterable to neural damage from BTLs, Black IC, dumpshock, etc. Get -2 to resist damage from Simsense",
+    quality "Sensitive System" (-15) "Double all essense losses caused by cyberware implants, does not affect bioware",
+    quality "Simsense Vertigo" (-10) "Receive -2 dice modifier to all tests when interacting with AR, VR, or Simsense",
+    quality "Sinner 1" (-5) "Character has a SIN",
+    quality "Sinner 2" (-10) "Character has a criminal record",
+    quality "Spirit Bane" (-10) "Certain types of spirits act aggressively towards this character",
+    quality "Uncouth" (-20) "The cost of learning or improving Social skills is twice normal (including character creation), and are treated as Unaware in any social skill they do not have 1 or more points in.",
+    quality "Uneducated" (-20) "Considered Unaware in Technical, Academic Knowledge, and Professional Knowledge skills they do not possess. Cost for improving skills is twice normal and cannot learn skill groups",
+    quality "Weak Immune System" (-5) "The character has -2 dice to any tests for resisting diseases."]]
