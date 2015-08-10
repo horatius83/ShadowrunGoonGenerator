@@ -8,9 +8,10 @@ import Skills (Skill(..), createSkill, SkillLevel(..))
 import Spells (Spell, getSpell)
 import Armor (getArmor)
 import Equipment (Equipment(..), getEquipment, FocusType(..))
+import Qualities (qualityDb)
 import System.Random (mkStdGen)
 import Prelude hiding (init, foldl)
-import Data.Maybe (fromJust)
+import Data.Maybe (fromJust, isJust)
 import Utility (selectFromRanges)
 import Data.Hashable (hash)
 import Qualities (Quality(..))
@@ -37,7 +38,7 @@ generateGoon goonType bp goonName = undefined
         seed = fromIntegral $ hash goonName
         metaType = selectMetaType goonType seed
         -- generate qualities
-
+        qualities = getQualitiesByMetaType goonType
         -- assign BPs to attributes
         -- assign BPs to skills
         -- assign BPs to resources, gear etc.
@@ -53,6 +54,20 @@ selectMetaType goonType seed = fromJust . fst $ selectFromRanges ranges (mkStdGe
             Face -> [35, 10, 10, 35, 10]
             Pilot -> [20, 15, 30, 20, 15]
         getRange probabilities = zip [Human .. Troll] probabilities 
+
+getQualitiesByMetaType :: GoonType -> [Quality]
+getQualitiesByMetaType goonType = getQuality qualityNames
+    where
+        getQuality [] = []
+        getQuality names = fmap fromJust $ filter isJust $ fmap (\x -> M.lookup x qualityDb) names
+        qualityNames  = case goonType of
+            Hacker -> []
+            Magician -> ["Magician"]
+            Berzerker -> ["High Tolerance 3"]
+            Gunman -> []
+            Face -> ["First Impression", "Blandness"]
+            Pilot -> []
+    
 
 addStats :: BP -> GoonType -> MetaType -> Stats -> Int -> Maybe (Stats, BP)
 addStats bp goonType metaType goonStats seed = getStatsAndBpFromStatName maybeStatName

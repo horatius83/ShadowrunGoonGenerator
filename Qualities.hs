@@ -1,4 +1,4 @@
-module Qualities where
+module Qualities (qualityDb, Quality(..)) where
 
 import Data.Map (Map, fromList, lookup)
 import Stats (BP(..), addBP, MetaType(..))
