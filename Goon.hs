@@ -14,8 +14,9 @@ import Prelude hiding (init, foldl)
 import Data.Maybe (fromJust, isJust)
 import Utility (selectFromRanges)
 import Data.Hashable (hash)
-import Qualities (Quality(..))
+import Qualities (Quality(..), getQualityCost)
 import qualified Data.Map as M
+import qualified Data.List as L
 
 data Goon = Goon {
     name :: String,
@@ -89,8 +90,29 @@ addStats bp goonType metaType goonStats seed = getStatsAndBpFromStatName maybeSt
             Pilot ->     [10, 10, 40, 10, 10, 10, 10, 10, 0, 0]
         statNames = ["body", "agility", "reaction", "strength", "charisma", "intuition", "logic", "willpower", "magic", "resonance"]
            
-getQualitiesForMetaType :: MetaType -> [Quality]
-getQualitiesForMetaType metaType = undefined
+{--
+getQualitiesForMetaType :: MetaType -> BP -> [Quality]
+getQualitiesForMetaType metaType maxBp = qualitiesForMetaType 
+    where
+        qualitiesForMetaType = undefined
+        qualitiesTable mt = case mt of
+            Hacker -> getQualities [["Codeslinger"]]
+            Magician -> getQualities [["Magician"], ["Focused Concentration " ++ x | x <- map show [1..2]], ["Magic Resistance " ++ x | x <- map show [1..4]]]
+            Berzerker -> getQualities [["High Pain Tolerance " ++ x | x <- map show [1..3]], ["Guts"]]
+            Gunman -> []
+            Face -> [["First Impression"]]
+            Pilot -> []
+        getQualities lst = []
+            where
+                qualitiesAndBp = map (map (\x -> (x, getQualityCost x []))) lst 
+                selectBp = L.foldl' buyQualities (maxBp, []) lst
+                buyQualities (bp, qs) [] = (bp, qs)
+                buyQualities (bp, qs) qlst@((name,cost):_)
+                    | bp < cost = (bp,qs)
+                    | otherwise = L.foldl' findMax (name,cost) qlst
+                findMax k= undefined
+   --}         
+            
 
 createGoonStats :: Int -> Int -> Int -> Int -> Int -> Int -> Int -> Int -> Int -> Stats
 createGoonStats b a r s c i l w init = createStatsShort $ createBaseStats b a r s c i l w 1 init 1 10 
