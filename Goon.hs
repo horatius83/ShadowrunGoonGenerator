@@ -14,9 +14,8 @@ import Prelude hiding (init, foldl)
 import Data.Maybe (fromJust, isJust)
 import Utility (selectFromRanges)
 import Data.Hashable (hash)
-import Qualities (Quality(..), getQualityCost)
+import Qualities (Quality(..))
 import qualified Data.Map as M
-import qualified Data.List as L
 
 data Goon = Goon {
     name :: String,
@@ -69,27 +68,6 @@ getQualitiesByMetaType goonType = getQuality qualityNames
             Face -> ["First Impression", "Blandness"]
             Pilot -> []
     
-
-addStats :: BP -> GoonType -> MetaType -> Stats -> Int -> Maybe (Stats, BP)
-addStats bp goonType metaType goonStats seed = getStatsAndBpFromStatName maybeStatName
-    where
-        getStatsAndBpFromStatName (Just goonName) = addToStats bp goonName goonStats metaType
-        getStatsAndBpFromStatName (Nothing) = Nothing
-        (maybeStatName, _) = selectFromRanges filteredRanges $ mkStdGen seed
-        -- Get the stats that are maxed out, and filter those out
-        filteredRanges = filter (\(stat, _) -> not $ stat `M.member` statsThatAreMaxed) ranges 
-        -- If one stat is maxed then we cannot max out any other stats, so remove any that are one below max as well
-        statsThatAreMaxed = getStatsThatAreMaxed goonStats metaType
-        ranges = zip statNames $ case goonType of
-                        -- b   a   r   s   c   i   l   w  m  r
-            Hacker ->    [10, 20, 10, 10, 10, 10, 40, 10, 0, 30]
-            Magician ->  [10, 10, 10, 10, 10, 10, 20, 10, 40, 0]
-            Berzerker -> [20, 10, 10, 40, 10, 10, 10, 10, 0, 0]
-            Gunman ->    [10, 40, 10, 10, 10, 10, 10, 10, 0, 0]
-            Face ->      [10, 10, 10, 10, 40, 10, 10, 10, 0, 0]
-            Pilot ->     [10, 10, 40, 10, 10, 10, 10, 10, 0, 0]
-        statNames = ["body", "agility", "reaction", "strength", "charisma", "intuition", "logic", "willpower", "magic", "resonance"]
-           
 {--
 getQualitiesForMetaType :: MetaType -> BP -> [Quality]
 getQualitiesForMetaType metaType maxBp = qualitiesForMetaType 
@@ -112,7 +90,26 @@ getQualitiesForMetaType metaType maxBp = qualitiesForMetaType
                     | otherwise = L.foldl' findMax (name,cost) qlst
                 findMax k= undefined
    --}         
-            
+
+addStats :: BP -> GoonType -> MetaType -> Stats -> Int -> Maybe (Stats, BP)
+addStats bp goonType metaType goonStats seed = getStatsAndBpFromStatName maybeStatName
+    where
+        getStatsAndBpFromStatName (Just goonName) = addToStats bp goonName goonStats metaType
+        getStatsAndBpFromStatName (Nothing) = Nothing
+        (maybeStatName, _) = selectFromRanges filteredRanges $ mkStdGen seed
+        -- Get the stats that are maxed out, and filter those out
+        filteredRanges = filter (\(stat, _) -> not $ stat `M.member` statsThatAreMaxed) ranges 
+        -- If one stat is maxed then we cannot max out any other stats, so remove any that are one below max as well
+        statsThatAreMaxed = getStatsThatAreMaxed goonStats metaType
+        ranges = zip statNames $ case goonType of
+                        -- b   a   r   s   c   i   l   w  m  r
+            Hacker ->    [10, 20, 10, 10, 10, 10, 40, 10, 0, 30]
+            Magician ->  [10, 10, 10, 10, 10, 10, 20, 10, 40, 0]
+            Berzerker -> [20, 10, 10, 40, 10, 10, 10, 10, 0, 0]
+            Gunman ->    [10, 40, 10, 10, 10, 10, 10, 10, 0, 0]
+            Face ->      [10, 10, 10, 10, 40, 10, 10, 10, 0, 0]
+            Pilot ->     [10, 10, 40, 10, 10, 10, 10, 10, 0, 0]
+        statNames = ["body", "agility", "reaction", "strength", "charisma", "intuition", "logic", "willpower", "magic", "resonance"]
 
 createGoonStats :: Int -> Int -> Int -> Int -> Int -> Int -> Int -> Int -> Int -> Stats
 createGoonStats b a r s c i l w init = createStatsShort $ createBaseStats b a r s c i l w 1 init 1 10 

@@ -1,16 +1,50 @@
-module Qualities (qualityDb, Quality(..)) where
+module Qualities (qualityDb, Quality(..), getQualityCost) where
 
 import Data.Map (Map, fromList, lookup)
 import Stats (BP(..), addBP, MetaType(..))
 import Control.Applicative ((<$>), (<*>))
 import Prelude hiding (lookup)
 
-data Quality = Quality { 
-    qualityName :: String,
-    qualityBp :: BP,
-    qualityDescription :: String,
-    qualityIncompatible :: Maybe [String],
-    qualityDependency :: Maybe [String]} deriving (Show)
+type Name = String
+type Description = String
+type Toxin = String
+data AddictionLevel = Mild | Moderate | Severe | Burnout deriving (Show)
+data Level = One | Two deriving (Show)
+
+data Quality = Quality Name BP Description (Maybe [String]) (Maybe [String])
+    | Aptitude String
+    | CodeSlinger String
+    | ExceptionalAttribute String 
+    | Addiction String AddictionLevel
+    | Immunity Toxin Level
+    | CoderBlock String
+    | Incompetent String deriving (Show)
+
+qualityName :: Quality -> String
+qualityName q = case q of
+    (Aptitude skill) -> "Aptitude for " ++ show skill
+    (CodeSlinger matrixAction) -> "CodeSlinger at " ++ show matrixAction
+    (ExceptionalAttribute attribute) -> "Exceptional " ++ show attribute
+    (Addiction substance level) -> "Addicted to " ++ substance ++ "(" ++ (show level) ++ ")"
+    (Immunity toxin level) -> "Natural immunity to " ++ (show toxin) ++ "(" ++ (show level) ++ ")"
+    (CoderBlock matrixAction) -> "CoderBlock at " ++ show matrixAction
+    (Incompetent skill) -> "Incompetent at " ++ show skill
+    (Quality name _ _ _ _) -> name
+
+qualityBp :: Quality -> BP
+qualityBp q = case q of
+    (Aptitude _) -> BP 10
+    (CodeSlinger _) -> BP 10
+    (ExceptionalAttribute _) -> BP 20
+    (Addiction _ Mild) -> BP (-5)
+    (Addiction _ Moderate) -> BP (-10)
+    (Addiction _ Severe) -> BP (-20)
+    (Addiction _ Burnout) -> BP (-30)
+    (Immunity _ One) -> BP 5
+    (Immunity _ Two) -> BP 10
+    (CoderBlock _) -> BP (-5)
+    (Incompetent _) -> BP (-5) 
+    (Quality _ bp _ _ _) -> bp
 
 getQualityCost :: String -> [Quality] -> Maybe BP
 getQualityCost nameOfQuality qualities
@@ -65,7 +99,7 @@ qualityDb = fromList [(qualityName q, q) | q <- [
     quality "Photographic Memory" 10 "When making memory tests, the character gains -1 threshold modifier to the test.",
     quality "Quick Healer" 10 "The character receives +2 dice pool modifier to all Healing Tests made on/for/by them, including magical healing",
     quality "Resistance to Pathogens or Toxins" 5 "Receive a +1 dice pool modifier to resistance tests to pathogens (exclusive or) toxins",
-    quality "Resistance to Pathogens and Toxins" 10 "Receive a +1 dice pool modifier to restance tests to pathogens and toxins",
+    quality "Resistance to Pathogens and Toxins" 10 "Receive a +1 dice pool modifier to resistance tests to pathogens and toxins",
     Quality "Technomancer" (BP 5) "Can access or manipulate the matrix through sheer force of will. Start with Resonance attribute of 1 that can be increased to a maximum of 6" (Just ["Magician", "Adept", "Mystic Adept"]) Nothing,
     quality "Toughness" 10 "Gain +1 dice pool modifier to Body when making Damage Resistance Tests",
     quality "Will To Live 1" 5 "The character gains 1 additional damage overflow box. Does not raise the threshold at which the character becomes incompacitated, or wound modifiers from damage taken.",
