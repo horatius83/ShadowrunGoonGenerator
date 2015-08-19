@@ -14,7 +14,7 @@ import Prelude hiding (init, foldl)
 import Data.Maybe (fromJust, isJust)
 import Utility (selectFromRanges)
 import Data.Hashable (hash)
-import Qualities (Quality(..))
+import Qualities (Quality(..), qualityDb)
 import qualified Data.Map as M
 
 data Goon = Goon {
@@ -55,7 +55,7 @@ selectMetaType goonType seed = fromJust . fst $ selectFromRanges ranges (mkStdGe
             Pilot -> [20, 15, 30, 20, 15]
         getRange probabilities = zip [Human .. Troll] probabilities 
 
-getQualitiesByMetaType :: GoonType -> [Quality]
+{--getQualitiesByMetaType :: GoonType -> [Quality]
 getQualitiesByMetaType goonType = getQuality qualityNames
     where
         getQuality [] = []
@@ -64,32 +64,19 @@ getQualitiesByMetaType goonType = getQuality qualityNames
             Hacker -> []
             Magician -> ["Magician"]
             Berzerker -> ["High Tolerance 3"]
-            Gunman -> []
+            Gunman ->[]
             Face -> ["First Impression", "Blandness"]
             Pilot -> []
-    
-{--
-getQualitiesForMetaType :: MetaType -> BP -> [Quality]
-getQualitiesForMetaType metaType maxBp = qualitiesForMetaType 
+  --}  
+getQualitiesByMetaType :: GoonType -> BP -> [Quality]
+getQualitiesByMetaType goonType bp = undefined
     where
-        qualitiesForMetaType = undefined
-        qualitiesTable mt = case mt of
-            Hacker -> getQualities [["Codeslinger"]]
-            Magician -> getQualities [["Magician"], ["Focused Concentration " ++ x | x <- map show [1..2]], ["Magic Resistance " ++ x | x <- map show [1..4]]]
-            Berzerker -> getQualities [["High Pain Tolerance " ++ x | x <- map show [1..3]], ["Guts"]]
-            Gunman -> []
-            Face -> [["First Impression"]]
-            Pilot -> []
-        getQualities lst = []
-            where
-                qualitiesAndBp = map (map (\x -> (x, getQualityCost x []))) lst 
-                selectBp = L.foldl' buyQualities (maxBp, []) lst
-                buyQualities (bp, qs) [] = (bp, qs)
-                buyQualities (bp, qs) qlst@((name,cost):_)
-                    | bp < cost = (bp,qs)
-                    | otherwise = L.foldl' findMax (name,cost) qlst
-                findMax k= undefined
-   --}         
+        qualityNames = case goonType of
+            Hacker -> [[CodeSlinger "Matrix Attack"], [ExceptionalAttribute "Logic"]]
+            Magician -> (map (map toQuality) [["Magician"], ["Focused Concentration 1", "Focused Concentration 2"]]) ++ [[ExceptionalAttribute "Magic"]]
+            Berzerker -> (map (map toQuality) [["High Pain Tolerance" ++ (show i) | i <- [1..3]]]) ++ [[ExceptionalAttribute "Strength"]]
+            Gunman -> [[ExceptionalAttribute "Agility"]]
+        toQuality x = fromJust $ M.lookup x qualityDb 
 
 addStats :: BP -> GoonType -> MetaType -> Stats -> Int -> Maybe (Stats, BP)
 addStats bp goonType metaType goonStats seed = getStatsAndBpFromStatName maybeStatName
