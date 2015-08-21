@@ -8,14 +8,15 @@ import Skills (Skill(..), createSkill, SkillLevel(..))
 import Spells (Spell, getSpell)
 import Armor (getArmor)
 import Equipment (Equipment(..), getEquipment, FocusType(..))
-import Qualities (qualityDb)
+import Qualities (qualityDb, getQualityCost)
 import System.Random (mkStdGen)
 import Prelude hiding (init, foldl)
-import Data.Maybe (fromJust, isJust)
+import Data.Maybe (fromJust, isJust, fromMaybe)
 import Utility (selectFromRanges)
 import Data.Hashable (hash)
 import Qualities (Quality(..), qualityDb)
 import qualified Data.Map as M
+import qualified Data.List as L
 
 data Goon = Goon {
     name :: String,
@@ -55,28 +56,32 @@ selectMetaType goonType seed = fromJust . fst $ selectFromRanges ranges (mkStdGe
             Pilot -> [20, 15, 30, 20, 15]
         getRange probabilities = zip [Human .. Troll] probabilities 
 
-{--getQualitiesByMetaType :: GoonType -> [Quality]
-getQualitiesByMetaType goonType = getQuality qualityNames
-    where
-        getQuality [] = []
-        getQuality names = fmap fromJust $ filter isJust $ fmap (\x -> M.lookup x qualityDb) names
-        qualityNames  = case goonType of
-            Hacker -> []
-            Magician -> ["Magician"]
-            Berzerker -> ["High Tolerance 3"]
-            Gunman ->[]
-            Face -> ["First Impression", "Blandness"]
-            Pilot -> []
-  --}  
 getQualitiesByMetaType :: GoonType -> BP -> [Quality]
 getQualitiesByMetaType goonType bp = undefined
     where
         qualityNames = case goonType of
             Hacker -> [[CodeSlinger "Matrix Attack"], [ExceptionalAttribute "Logic"]]
-            Magician -> (map (map toQuality) [["Magician"], ["Focused Concentration 1", "Focused Concentration 2"]]) ++ [[ExceptionalAttribute "Magic"]]
-            Berzerker -> (map (map toQuality) [["High Pain Tolerance" ++ (show i) | i <- [1..3]]]) ++ [[ExceptionalAttribute "Strength"]]
+            Magician -> (toQualities [["Magician"], ["Focused Concentration 1", "Focused Concentration 2"]]) ++ [[ExceptionalAttribute "Magic"]]
+            Berzerker -> (toQualities [["High Pain Tolerance" ++ (show i) | i <- [1..3]]]) ++ [[ExceptionalAttribute "Strength"]]
             Gunman -> [[ExceptionalAttribute "Agility"]]
+            Face -> (toQualities [["First Impression"], ["Blandness"]]) ++ [[ExceptionalAttribute "Charisma"]]
+            Pilot -> [[ExceptionalAttribute "Reaction"]]
         toQuality x = fromJust $ M.lookup x qualityDb 
+        toQualities lst = map (map toQuality) lst
+        compareBp (currentBp, q) quality maxAmount = 
+            if qbp > currentBp && qbp <= maxAmount
+            then (qbp, quality) 
+            else (currentBp, q)
+            where
+                qbp = fromMaybe (BP 0) cost 
+                cost = getQualityCost quality []
+{--        maxBpQualityUnderAmount [] _ = Nothing
+        maxBpQualityUnderAmount lst@(x:xs) amount
+            | amount < cost  = Nothing
+            | otherwise = Just $ L.foldl' (\a q -> compareBp a q amount) () lst
+            where
+                cost = getQualityCost x []
+        getQualities gt qs = undefined --}
 
 addStats :: BP -> GoonType -> MetaType -> Stats -> Int -> Maybe (Stats, BP)
 addStats bp goonType metaType goonStats seed = getStatsAndBpFromStatName maybeStatName
