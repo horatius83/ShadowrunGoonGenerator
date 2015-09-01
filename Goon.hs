@@ -11,12 +11,13 @@ import Equipment (Equipment(..), getEquipment, FocusType(..))
 import Qualities (qualityDb, getQualityCost)
 import System.Random (mkStdGen)
 import Prelude hiding (init, foldl)
-import Data.Maybe (fromJust, isJust, fromMaybe)
+import Data.Maybe (fromJust, isJust, isNothing, fromMaybe)
 import Utility (selectFromRanges)
 import Data.Hashable (hash)
 import Qualities (Quality(..), qualityDb)
 import qualified Data.Map as M
 import qualified Data.List as L
+import Control.Applicative
 
 data Goon = Goon {
     name :: String,
@@ -39,7 +40,7 @@ generateGoon goonType bp goonName = undefined
         seed = fromIntegral $ hash goonName
         metaType = selectMetaType goonType seed
         -- generate qualities
-        qualities = getQualitiesByMetaType goonType
+        qualities = getMaxQualitiesByMetaType goonType
         -- assign BPs to attributes
         -- assign BPs to skills
         -- assign BPs to resources, gear etc.
@@ -56,32 +57,43 @@ selectMetaType goonType seed = fromJust . fst $ selectFromRanges ranges (mkStdGe
             Pilot -> [20, 15, 30, 20, 15]
         getRange probabilities = zip [Human .. Troll] probabilities 
 
-getQualitiesByMetaType :: GoonType -> BP -> [Quality]
-getQualitiesByMetaType goonType bp = undefined
+getMetaTypeQualities :: GoonType -> [[Quality]]
+getMetaTypeQualities goonType = case goonType of
+    Hacker -> [[CodeSlinger "Matrix Attack"], [ExceptionalAttribute "Logic"]]
+    Magician -> (toQualities [["Magician"], ["Focused Concentration 1", "Focused Concentration 2"]]) ++ [[ExceptionalAttribute "Magic"]]
+    Berzerker -> (toQualities [["High Pain Tolerance" ++ (show i) | i <- [1..3]]]) ++ [[ExceptionalAttribute "Strength"]]
+    Gunman -> [[ExceptionalAttribute "Agility"]]
+    Face -> (toQualities [["First Impression"], ["Blandness"]]) ++ [[ExceptionalAttribute "Charisma"]]
+    Pilot -> [[ExceptionalAttribute "Reaction"]]
     where
-        qualityNames = case goonType of
-            Hacker -> [[CodeSlinger "Matrix Attack"], [ExceptionalAttribute "Logic"]]
-            Magician -> (toQualities [["Magician"], ["Focused Concentration 1", "Focused Concentration 2"]]) ++ [[ExceptionalAttribute "Magic"]]
-            Berzerker -> (toQualities [["High Pain Tolerance" ++ (show i) | i <- [1..3]]]) ++ [[ExceptionalAttribute "Strength"]]
-            Gunman -> [[ExceptionalAttribute "Agility"]]
-            Face -> (toQualities [["First Impression"], ["Blandness"]]) ++ [[ExceptionalAttribute "Charisma"]]
-            Pilot -> [[ExceptionalAttribute "Reaction"]]
         toQuality x = fromJust $ M.lookup x qualityDb 
         toQualities lst = map (map toQuality) lst
-        compareBp (currentBp, q) quality maxAmount = 
-            if qbp > currentBp && qbp <= maxAmount
-            then (qbp, quality) 
-            else (currentBp, q)
+
+selectMaxValueUnderThreshold :: (a -> a -> a) -> a -> [[a]] -> [a]
+selectMaxValueUnderThreshold _ _ [] = []
+selectMaxValueUnderThreshold f maxV lstOfLsts = undefined
+
+getMaxQualitiesByMetaType :: GoonType -> BP -> [Quality]
+getMaxQualitiesByMetaType goonType bp = undefined
+{--    where
+        goonQualities = getMetaTypeQualities goonType
+        getMaxQuality bestSoFar (quality:_) maxBp
+            | isNothing bestSoFar && qBp < maxBp = Nothing
+            | isNothing bestSoFar = Just quality
+            | qBp < maxBp && qBp > bsfBp = Just quality
+            | _ = bestSoFar
             where
-                qbp = fromMaybe (BP 0) cost 
-                cost = getQualityCost quality []
-{--        maxBpQualityUnderAmount [] _ = Nothing
-        maxBpQualityUnderAmount lst@(x:xs) amount
-            | amount < cost  = Nothing
-            | otherwise = Just $ L.foldl' (\a q -> compareBp a q amount) () lst
+                getCost q = fromJust $ getQualityCost q []
+                qBp = getCost quality
+                bsfBp = getCost bestSoFar
+        getMaxQualities = snd $ L.foldl' max (bp, []) goonQualities
             where
-                cost = getQualityCost x []
-        getQualities gt qs = undefined --}
+                max (bp, qs) qlst 
+                    | isNothing r = (bp, qs)
+                    | _ = (bp - rBp, (r:qs))
+                    where
+                        r = getMaxQuality Nothing qlst bp
+                        rBp = getQualityCost (fromJust r) []--}
 
 addStats :: BP -> GoonType -> MetaType -> Stats -> Int -> Maybe (Stats, BP)
 addStats bp goonType metaType goonStats seed = getStatsAndBpFromStatName maybeStatName
