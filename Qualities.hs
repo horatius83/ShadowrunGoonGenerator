@@ -46,15 +46,15 @@ qualityBp q = case q of
     (Incompetent _) -> BP (-5) 
     (Quality _ bp _ _ _) -> bp
 
-getQualityCost :: String -> [Quality] -> Maybe BP
-getQualityCost nameOfQuality qualities
-    | isTechnomancer && (nameOfQuality == "Scorched" || nameOfQuality == "Sensitive Neural Structure") = addBP <$> bpCost <*> bpCost
-    | isTechnomancer && nameOfQuality == "Simsense Vertigo" = Just $ BP (-15)
+getQualityCost :: Quality -> [Quality] -> BP
+getQualityCost q qualities
+    | isTechnomancer && (nameOfQuality == "Scorched" || nameOfQuality == "Sensitive Neural Structure") = addBP bpCost bpCost
+    | isTechnomancer && nameOfQuality == "Simsense Vertigo" = BP (-15)
     | otherwise = bpCost
     where
         isTechnomancer = "Technomancer" `elem` map qualityName qualities 
-        bpCost = qualityBp <$> maybeQuality
-        maybeQuality = lookup nameOfQuality qualityDb  
+        bpCost = qualityBp q
+        nameOfQuality = qualityName q
 
 getAvailableQualities :: [Quality] -> MetaType -> Map String Quality
 getAvailableQualities currentQualities metaType = undefined

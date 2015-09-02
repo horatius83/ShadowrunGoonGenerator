@@ -69,31 +69,24 @@ getMetaTypeQualities goonType = case goonType of
         toQuality x = fromJust $ M.lookup x qualityDb 
         toQualities lst = map (map toQuality) lst
 
-selectMaxValueUnderThreshold :: (a -> a -> a) -> a -> [[a]] -> [a]
-selectMaxValueUnderThreshold _ _ [] = []
-selectMaxValueUnderThreshold f maxV lstOfLsts = undefined
+selectMaxValueUnderThreshold :: Num b => (a -> b) -> b -> [[a]] -> (b, [a])
+selectMaxValueUnderThreshold _ initialAmount [] = (initialAmount, [])
+selectMaxValueUnderThreshold costF initialAmount lstOfLsts = undefined --L.foldl' getMaxValue (initialAmount, []) lstOfLsts 
+{--
+    where
+        getCostAndItem amount = L.maximumBy (\x -> costUnder x amount)
+        costUnder x amount = if x < amount then x else (-x)
+        getMaxValue (c, x) y 
+            | maxY >= 0 = (c - r, (maxY:x))
+            | _ = (c, x)
+            where
+                (r, maxY) = getCostAndItem c y--}
 
 getMaxQualitiesByMetaType :: GoonType -> BP -> [Quality]
-getMaxQualitiesByMetaType goonType bp = undefined
+getMaxQualitiesByMetaType goonType bp = undefined --selectMaxValueUnderThreshold bpCost bp goonQualities
 {--    where
         goonQualities = getMetaTypeQualities goonType
-        getMaxQuality bestSoFar (quality:_) maxBp
-            | isNothing bestSoFar && qBp < maxBp = Nothing
-            | isNothing bestSoFar = Just quality
-            | qBp < maxBp && qBp > bsfBp = Just quality
-            | _ = bestSoFar
-            where
-                getCost q = fromJust $ getQualityCost q []
-                qBp = getCost quality
-                bsfBp = getCost bestSoFar
-        getMaxQualities = snd $ L.foldl' max (bp, []) goonQualities
-            where
-                max (bp, qs) qlst 
-                    | isNothing r = (bp, qs)
-                    | _ = (bp - rBp, (r:qs))
-                    where
-                        r = getMaxQuality Nothing qlst bp
-                        rBp = getQualityCost (fromJust r) []--}
+        bpCost x = getQualityCost x [] --}
 
 addStats :: BP -> GoonType -> MetaType -> Stats -> Int -> Maybe (Stats, BP)
 addStats bp goonType metaType goonStats seed = getStatsAndBpFromStatName maybeStatName
