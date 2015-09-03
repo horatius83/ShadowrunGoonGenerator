@@ -18,6 +18,7 @@ import Qualities (Quality(..), qualityDb)
 import qualified Data.Map as M
 import qualified Data.List as L
 import Control.Applicative
+import Data.Ord (comparing)
 
 data Goon = Goon {
     name :: String,
@@ -69,24 +70,19 @@ getMetaTypeQualities goonType = case goonType of
         toQuality x = fromJust $ M.lookup x qualityDb 
         toQualities lst = map (map toQuality) lst
 
-selectMaxValueUnderThreshold :: Num b => (a -> b) -> b -> [[a]] -> (b, [a])
-selectMaxValueUnderThreshold _ initialAmount [] = (initialAmount, [])
-selectMaxValueUnderThreshold costF initialAmount lstOfLsts = undefined --L.foldl' getMaxValue (initialAmount, []) lstOfLsts 
-{--
-    where
-        getCostAndItem amount = L.maximumBy (\x -> costUnder x amount)
-        costUnder x amount = if x < amount then x else (-x)
-        getMaxValue (c, x) y 
-            | maxY >= 0 = (c - r, (maxY:x))
-            | _ = (c, x)
-            where
-                (r, maxY) = getCostAndItem c y--}
-
 getMaxQualitiesByMetaType :: GoonType -> BP -> [Quality]
-getMaxQualitiesByMetaType goonType bp = undefined --selectMaxValueUnderThreshold bpCost bp goonQualities
-{--    where
-        goonQualities = getMetaTypeQualities goonType
-        bpCost x = getQualityCost x [] --}
+getMaxQualitiesByMetaType goonType bp = undefined 
+    where
+        maxCost :: [Quality] -> BP -> Maybe Quality
+        maxCost lst maxBp 
+            | L.null filteredList = Just $ L.maximumBy (comparing (\x -> getQualityCost x [])) filteredList 
+            | otherwise = Nothing
+            where
+                filteredList :: [Quality]
+                filteredList = filter underThreshold lst 
+                underThreshold x = bpx <= maxBp
+                    where
+                        bpx = getQualityCost x []
 
 addStats :: BP -> GoonType -> MetaType -> Stats -> Int -> Maybe (Stats, BP)
 addStats bp goonType metaType goonStats seed = getStatsAndBpFromStatName maybeStatName
