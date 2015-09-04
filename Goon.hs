@@ -1,17 +1,17 @@
-module Goon (getGoon, selectFromRanges, selectMetaType) where
+module Goon (selectFromRanges, selectMetaType) where
 
 import Cyberware (Cyberware(..), BodyPart(..), CyberLimbEnhancement(..))
 import Hacking (Program)
-import Stats (Stats, createStatsShort, BP(..), MetaType(..), getStatsThatAreMaxed, addToStats)
+import Stats (Stats, createStatsShort, BP(..), MetaType(..), getStatsThatAreMaxed, addToStats, subBP)
 import Weapons (Weapon, getWeapon)
 import Skills (Skill(..), createSkill, SkillLevel(..))
 import Spells (Spell, getSpell)
 import Armor (getArmor)
 import Equipment (Equipment(..), getEquipment, FocusType(..))
-import Qualities (qualityDb, getQualityCost)
+import Qualities (getQualityCost)
 import System.Random (mkStdGen)
 import Prelude hiding (init, foldl)
-import Data.Maybe (fromJust, isJust, isNothing, fromMaybe)
+import Data.Maybe (fromJust, isNothing)
 import Utility (selectFromRanges)
 import Data.Hashable (hash)
 import Qualities (Quality(..), qualityDb)
@@ -41,7 +41,7 @@ generateGoon goonType bp goonName = undefined
         seed = fromIntegral $ hash goonName
         metaType = selectMetaType goonType seed
         -- generate qualities
-        qualities = getMaxQualitiesByMetaType goonType
+        (bp', qualities) = getMaxQualitiesByMetaType goonType bp
         -- assign BPs to attributes
         -- assign BPs to skills
         -- assign BPs to resources, gear etc.
@@ -70,15 +70,20 @@ getMetaTypeQualities goonType = case goonType of
         toQuality x = fromJust $ M.lookup x qualityDb 
         toQualities lst = map (map toQuality) lst
 
-getMaxQualitiesByMetaType :: GoonType -> BP -> [Quality]
-getMaxQualitiesByMetaType goonType bp = undefined 
+getMaxQualitiesByMetaType :: GoonType -> BP -> (BP, [Quality])
+getMaxQualitiesByMetaType goonType bp = L.foldl' ff (bp, []) qualities 
     where
-        maxCost :: [Quality] -> BP -> Maybe Quality
+        ff (bp', qs) nqs
+            | isNothing mq = (bp', qs)
+            | otherwise = ((subBP bp' mqc), (fromJust mq:qs))
+            where
+                mq = maxCost nqs bp'
+                mqc = fromJust $ (\x -> getQualityCost x []) <$> mq
+        qualities = getMetaTypeQualities goonType
         maxCost lst maxBp 
             | L.null filteredList = Just $ L.maximumBy (comparing (\x -> getQualityCost x [])) filteredList 
             | otherwise = Nothing
             where
-                filteredList :: [Quality]
                 filteredList = filter underThreshold lst 
                 underThreshold x = bpx <= maxBp
                     where
@@ -129,9 +134,7 @@ createBaseStats b a r s c i l w ess init ip cm = statsTuples ++ [("ess", ess)]
         statsTuples = zip ["b", "a", "r", "s", "c", "i", "l", "w", "e", "init", "ip", "cm"] statsList 
         statsList = map fromIntegral [b,a,r,s,c,i,l,w,1,init,ip,cm] 
 
-getGoon :: String -> Goon
-getGoon goonName = undefined
-
+{--
 rentacop :: Goon
 rentacop = createGoon "Corporate Security Unit" 2 goonStats goonSkills goonWeapons armor goonEquipment Nothing Nothing Nothing 
     where
@@ -149,4 +152,5 @@ rentaCopLt = Goon "CorpSec Lieutenant" 2 goonStats goonSkills goonWeapons goonEq
         goonWeapons = [getWeapon "Fischetti Security 600 Light Pistol"]
         goonEquipment = [getArmor "Armor Vest", getEquipment "Renraku Sensei", Focus Spellcasting 2] 
         goonCyberware = [CyberLimb "Full Arm" Arm (Just $ Body 1) 1.0 15 []]
-        goonSpells = map getSpell ["Detect Life", "Light", "Physical Barrier", "Powerbolt", "Silence", "Stunball"]        
+        goonSpells = map getSpell ["Detect Life", "Light", "Physical Barrier", "Powerbolt", "Silence", "Stunball"]
+--}

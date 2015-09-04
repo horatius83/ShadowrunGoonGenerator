@@ -9,6 +9,7 @@ module Stats(
     addToStats,
     BP(..),
     addBP,
+    subBP,
     MetaType(..),
     isStatMaxed,
     getMetaTypeBpCost,
